@@ -1,0 +1,163 @@
+﻿@page "/events/{EventId:int}"
+@using Event_Management_System.Models.Base
+@using Event_Management_System.Data
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<MasDbContext> DbFactory
+@inject NavigationManager Nav
+
+<h3 class="text-center my-4">
+    🎫 <span class="fw-bold">Event Details</span>
+</h3>
+
+@if (selectedEvent != null)
+{
+    <div class="container">
+        <div class="mb-4">
+            <h4>@selectedEvent.EventTitle</h4>
+            <p>@selectedEvent.Description</p>
+        </div>
+
+        <ul class="list-group mb-3">
+            <li class="list-group-item">
+                <strong>📅 Dates:</strong>
+                @selectedEvent.StartDate.ToShortDateString() – @selectedEvent.EndDate.ToShortDateString()
+            </li>
+            <li class="list-group-item">
+                <strong>📍 Venue:</strong> @selectedEvent.Venue?.VenueName
+            </li>
+            <li class="list-group-item">
+                <strong>🏛️ Location:</strong>
+                @selectedEvent.Venue?.Location?.City, @selectedEvent.Venue?.Location?.Street
+            </li>
+            <li class="list-group-item">
+                <strong>🧑‍💼 Hosted by:</strong> @selectedEvent.Organizer.Username
+            </li>
+            <li class="list-group-item">
+                <strong>🏷️ Category:</strong>
+                <span class="badge bg-secondary">TBD</span>
+            </li>
+        </ul>
+
+        <div class="d-flex flex-wrap gap-2">
+            @if (IsEnrolled())
+            {
+                <button class="btn btn-danger" @onclick="UnenrollFromEvent">
+                    ❌ Unenroll
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-success" @onclick="EnrollInEvent">
+                    ✅ Enroll
+                </button>
+            }
+
+            <button class="btn btn-outline-primary" @onclick="ViewParticipants">
+                👥 View Participants
+            </button>
+
+            <button class="btn btn-outline-info" @onclick="ViewDiscussion">
+                💬 View Discussion
+            </button>
+
+            <button class="btn btn-outline-secondary ms-auto" @onclick="GoBack">
+                ⬅️ Back
+            </button>
+        </div>
+    </div>
+}
+else
+{
+    <p class="text-danger text-center">Event not found.</p>
+}
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private Event? selectedEvent;
+    private User? currentUser;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        using var db = await DbFactory.CreateDbContextAsync();
+
+        currentUser = await db.Users.FirstOrDefaultAsync();
+
+        selectedEvent = await db.Events
+            .Include(e => e.Venue).ThenInclude(v => v.Location)
+            .Include(e => e.Organizer)
+            .Include(e => e.Enrollments).ThenInclude(en => en.User)
+            .FirstOrDefaultAsync(e => e.EventId == EventId);
+    }
+
+    private bool IsEnrolled()
+    {
+        return selectedEvent?.Enrollments.Any(e => e.User.UserId == currentUser?.UserId) == true;
+    }
+
+    private async Task EnrollInEvent()
+    {
+        if (selectedEvent != null && currentUser != null && !IsEnrolled())
+        {
+            using var db = await DbFactory.CreateDbContextAsync();
+
+            var user = await db.Users.FindAsync(currentUser.UserId);
+            var ev = await db.Events.FindAsync(selectedEvent.EventId);
+
+            if (user != null && ev != null)
+            {
+                var enrollment = new Enrollment(user, ev, DateTime.Now);
+                db.Enrollments.Add(enrollment);
+                await db.SaveChangesAsync();
+            }
+
+            await RefreshAsync();
+        }
+    }
+
+    private async Task UnenrollFromEvent()
+    {
+        if (selectedEvent != null && currentUser != null)
+        {
+            using var db = await DbFactory.CreateDbContextAsync();
+
+            var enrollment = await db.Enrollments
+                .FirstOrDefaultAsync(e => e.UserId == currentUser.UserId && e.EventId == selectedEvent.EventId);
+
+            if (enrollment != null)
+            {
+                db.Enrollments.Remove(enrollment);
+                await db.SaveChangesAsync();
+            }
+
+            await RefreshAsync();
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        using var db = await DbFactory.CreateDbContextAsync();
+        selectedEvent = await db.Events
+            .Include(e => e.Venue).ThenInclude(v => v.Location)
+            .Include(e => e.Organizer)
+            .Include(e => e.Enrollments).ThenInclude(en => en.User)
+            .FirstOrDefaultAsync(e => e.EventId == EventId);
+        StateHasChanged();
+    }
+
+    private void ViewParticipants()
+    {
+        Nav.NavigateTo($"/events/{EventId}/participants");
+    }
+
+    private void ViewDiscussion()
+    {
+        Nav.NavigateTo($"/events/{EventId}/discussion");
+    }
+
+    private void GoBack()
+    {
+        Nav.NavigateTo("/events");
+    }
+}

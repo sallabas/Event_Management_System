@@ -1,0 +1,125 @@
+﻿@page "/events/{EventId:int}/discussion"
+@using Event_Management_System.Models.Base
+@using Event_Management_System.Data
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<MasDbContext> DbFactory
+@inject NavigationManager Nav
+
+@code {
+    [Parameter]
+    public int EventId { get; set; }
+
+    private Event? selectedEvent;
+    private User? currentUser;
+    private string newComment = string.Empty;
+
+    private IEnumerable<DiscussionComment> Comments =>
+        selectedEvent?.Comments ?? Enumerable.Empty<DiscussionComment>();
+
+    private bool isEnrolled =>
+        selectedEvent != null &&
+        currentUser != null &&
+        selectedEvent.Enrollments.Any(e => e.UserId == currentUser.UserId);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        using var db = await DbFactory.CreateDbContextAsync();
+
+        currentUser = await db.Users.FirstOrDefaultAsync();
+
+        selectedEvent = await db.Events
+            .Include(e => e.Enrollments).ThenInclude(en => en.User)
+            .Include(e => e.Comments).ThenInclude(c => c.Author)
+            .FirstOrDefaultAsync(e => e.EventId == EventId);
+    }
+
+    private async Task SubmitComment()
+    {
+        if (selectedEvent == null || currentUser == null || string.IsNullOrWhiteSpace(newComment)) return;
+
+        if (!isEnrolled) return;
+
+        using var db = await DbFactory.CreateDbContextAsync();
+
+        var user = await db.Users.FindAsync(currentUser.UserId);
+        var ev = await db.Events
+            .Include(e => e.Enrollments)   
+            .FirstOrDefaultAsync(e => e.EventId == selectedEvent.EventId);
+
+        if (user == null || ev == null) return;
+
+        var comment = new DiscussionComment(user, ev, newComment);
+        db.DiscussionComments.Add(comment);
+        await db.SaveChangesAsync();
+
+        newComment = string.Empty;
+        await RefreshAsync();
+    }
+
+
+    private async Task RefreshAsync()
+    {
+        using var db = await DbFactory.CreateDbContextAsync();
+        selectedEvent = await db.Events
+            .Include(e => e.Enrollments).ThenInclude(en => en.User)
+            .Include(e => e.Comments).ThenInclude(c => c.Author)
+            .FirstOrDefaultAsync(e => e.EventId == EventId);
+
+        StateHasChanged();
+    }
+
+    private void GoBack() => Nav.NavigateTo($"/events/{EventId}");
+}
+
+<div class="container mt-5">
+    <h4 class="mb-4">
+        <i class="bi bi-chat-left-text"></i> Event Discussion
+    </h4>
+
+    @if (selectedEvent != null)
+    {
+        <h5 class="mb-3">@selectedEvent.EventTitle</h5>
+
+        @if (isEnrolled)
+        {
+            <div class="mb-3">
+                <textarea class="form-control" placeholder="Share your thoughts..." @bind="newComment" rows="3"></textarea>
+                <button class="btn btn-primary mt-2" @onclick="SubmitComment">
+                    <i class="bi bi-send"></i> Submit
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-circle"></i> You must be enrolled in this event to comment.
+            </div>
+        }
+
+        @if (Comments.Any())
+        {
+            <ul class="list-group mb-4">
+                @foreach (var comment in Comments)
+                {
+                    <li class="list-group-item">
+                        <strong>@comment.Author?.Username:</strong> @comment.Content
+                        <br />
+                        <small class="text-muted">@comment.CreatedAt.ToString("g")</small>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="text-muted">No comments yet.</p>
+        }
+
+        <button class="btn btn-outline-secondary" @onclick="GoBack">
+            <i class="bi bi-arrow-left-circle"></i> Back to Event
+        </button>
+    }
+    else
+    {
+        <p class="text-danger">Event not found.</p>
+    }
+</div>

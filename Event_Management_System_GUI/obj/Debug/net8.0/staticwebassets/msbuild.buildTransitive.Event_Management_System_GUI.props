@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\Event_Management_System_GUI.props" />
+</Project>

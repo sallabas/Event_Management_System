@@ -1,0 +1,86 @@
+﻿@page "/user-enrollments"
+@using Event_Management_System.Models.Base
+@using Event_Management_System.Data
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<MasDbContext> DbFactory
+
+<h3 class="text-center mt-4">Users and Their Enrollments</h3>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <h5 class="text-primary">All Users</h5>
+            @if (_users is null)
+            {
+                <p class="text-muted">Loading...</p>
+            }
+            else if (_users.Count == 0)
+            {
+                <p class="text-muted">No users found.</p>
+            }
+            else
+            {
+                @foreach (var user in _users)
+                {
+                    <div class="card mb-2 @(user == selectedUser ? "border-primary" : "")" style="cursor: pointer;" @onclick="@(() => SelectUser(user))">
+                        <div class="card-body">
+                            <h6 class="card-title mb-0">@user.Username</h6>
+                            <small class="text-muted">@user.Email</small>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="col-md-8">
+            @if (selectedUser is not null)
+            {
+                <h5 class="text-success">@selectedUser.Username's Enrollments</h5>
+
+                @if (selectedUser.Enrollments.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var enrollment in selectedUser.Enrollments)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <strong>@enrollment.Event.EventTitle</strong><br />
+                                    <small>@enrollment.Event.Description</small>
+                                </span>
+                                <span class="badge bg-secondary">@enrollment.EnrollmentDate.ToShortDateString()</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mt-2">No enrollments found for this user.</p>
+                }
+            }
+            else
+            {
+                <p class="text-muted">Select a user to view their enrollments.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<User>? _users;
+    private User? selectedUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var db = await DbFactory.CreateDbContextAsync();
+
+        _users = await db.Users
+                .Include(u => u.Enrollments)
+                .ThenInclude(en => en.Event)
+                .ToListAsync();
+    }
+
+    private void SelectUser(User user)
+    {
+        selectedUser = user;
+    }
+}
