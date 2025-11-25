@@ -42,13 +42,24 @@ else
     <button class="btn-back" @onclick="GoBack">⬅ Back</button>
 }
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert-error">
+        @errorMessage
+    </div>
+}
+
+
 @code {
+    
     [Parameter] public int EventId { get; set; }
 
     private List<DiscussionComment> comments;
     private User currentUser;
     private Event currentEvent;
     private string newComment = "";
+    private string? errorMessage;
+
 
 
 
@@ -70,17 +81,31 @@ else
         comments = await Db.DiscussionComments
             .Where(d => d.TargetEventId == EventId)
             .Include(d => d.Author)
-            .AsNoTracking()       // optional, performans için
-            .OrderByDescending(d => d.DiscussionCommentId) // 🚀 CreatedAt yerine ID üzerinden sıralama
+            .AsNoTracking()       
+            .OrderByDescending(d => d.DiscussionCommentId)
             .ToListAsync();
     }
 
     private async Task SendComment()
     {
-        if (string.IsNullOrWhiteSpace(newComment) || currentUser == null || currentEvent == null)
+        if (string.IsNullOrWhiteSpace(newComment))
             return;
 
+        if (currentUser == null)
+        {
+            errorMessage = "You must be logged in to comment.";
+            return;
+        }
 
+        // 🔥 Kullanıcı etkinliğe kayıtlı mı?
+        bool isEnrolled = currentEvent.Enrollments
+            .Any(e => e.UserId == currentUser.UserId);
+
+        if (!isEnrolled)
+        {
+            errorMessage = "You must be enrolled to be able to comment.";
+            return;
+        }
         var comment = new DiscussionComment(currentUser, currentEvent, newComment);
 
         Db.DiscussionComments.Add(comment);

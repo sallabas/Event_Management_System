@@ -42,9 +42,9 @@ public class DiscussionComment
         
         bool isEnrolled = ev.Enrollments.Any(en => en.UserId == user.UserId);
 
-        if (!isEnrolled)
+        /*if (!isEnrolled)
             throw new InvalidOperationException(
-                "User must be enrolled in the event to write a comment.");
+                "User must be enrolled in the event to write a comment.");*/
         
         UserId = user.UserId;
         TargetEventId = ev.EventId;
