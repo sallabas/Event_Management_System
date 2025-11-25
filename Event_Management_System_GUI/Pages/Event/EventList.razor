@@ -1,4 +1,79 @@
 ﻿@page "/events"
+@inject EventService EventService
+@inject NavigationManager Navigation
+
+<h2 class="page-title">Upcoming Events</h2>
+
+@if (Events == null)
+{
+    <p>Loading events...</p>
+}
+else if (!Events.Any())
+{
+    <p>No upcoming events.</p>
+}
+else
+{
+    <div class="event-grid">
+        @foreach (var ev in Events)
+        {
+            <div class="event-card" @onclick="() => NavigateToDetails(ev.EventId)">
+                @* Photos fetched randomly by picsum, you need to change it later *@
+                <img class="event-image" src="https://picsum.photos/400/250?random=@ev.EventId"/>
+
+                <div class="event-content">
+
+                    <h3>@ev.EventTitle</h3>
+
+                    <p class="event-date">
+                        <i class="fa-solid fa-calendar-day"></i>
+                        @ev.StartDate.ToString("dd MMM yyyy - HH:mm")
+                    </p>
+
+                    <p class="event-location">
+                        <i class="fa-solid fa-location-dot"></i>
+                        @ev.Venue.Location.City, @ev.Venue.Location.Country
+                    </p>
+
+                    <div class="event-categories">
+                        @foreach (var cat in ev.Categories)
+                        {
+                            <span class="category-chip">@cat.CategoryName</span>
+                        }
+                    </div>
+
+                    <div class="event-footer">
+                        <span class="participants">
+                            <i class="fa-solid fa-users"></i>
+                            @ev.Enrollments.Count participants
+                        </span>
+
+                        <!-- JOIN BUTTON (modelde IsUserEnrolled yok → default değil) -->
+                        <span class="join-status not-joined">Details</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Event> Events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Events = await EventService.GetAllEvents();
+    }
+
+    void NavigateToDetails(int eventId)
+    {
+        Navigation.NavigateTo($"/events/{eventId}");
+    }
+}
+
+
+@*
+@page "/events"
 @using Event_Management_System.Models.Base
 @using Event_Management_System.Data
 @using Microsoft.EntityFrameworkCore
@@ -76,3 +151,4 @@
                           .ToListAsync();
     }
 }
+*@

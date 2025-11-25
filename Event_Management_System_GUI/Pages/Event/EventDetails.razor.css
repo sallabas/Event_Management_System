@@ -1,0 +1,107 @@
+﻿.details-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+}
+
+.details-card {
+    width: 900px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(6px);
+}
+
+.details-image {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    filter: brightness(85%);
+}
+
+.details-content {
+    padding: 30px;
+}
+
+.details-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.details-date,
+.details-location,
+.details-organizer,
+.details-participants {
+    color: #cfcfcf;
+    font-size: 15px;
+    margin: 6px 0;
+}
+
+.details-description {
+    margin: 20px 0;
+    font-size: 16px;
+    color: #d6d6d6;
+}
+
+.details-categories {
+    margin: 15px 0;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.category-chip {
+    background: rgba(18, 224, 97, 0.18);
+    color: #12e061;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(18, 224, 97, 0.35);
+}
+
+.details-buttons {
+    margin-top: 25px;
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-join {
+    background: #12e061;
+    color: black;
+}
+
+.btn-leave {
+    background: #ff4a4a;
+    color: white;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.12);
+    color: #e8e8e8;
+}
+
+.btn-back {
+    margin-left: auto;
+    background: #444;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.85;
+}
+
+.not-found {
+    color: red;
+    font-size: 22px;
+    text-align: center;
+}

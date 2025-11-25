@@ -1,4 +1,9 @@
-﻿/* ===== PAGE TITLE ===== */
+﻿:host {
+    display: block;
+    width: 100%;
+}
+
+/* ===== PAGE TITLE ===== */
 .page-title {
     font-size: 36px;
     font-weight: 700;

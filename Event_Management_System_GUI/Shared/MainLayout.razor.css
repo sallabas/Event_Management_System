@@ -1,3 +1,26 @@
+/*
+.layout-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.content-wrapper {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+    background-color: #f7f7f7;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.content {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+*/
+
+
+/*
 .page {
     position: relative;
     display: flex;
@@ -68,3 +91,4 @@ main {
         padding-right: 1.5rem !important;
     }
 }
+*/

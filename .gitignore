@@ -1,0 +1,25 @@
+﻿# Build
+bin/
+obj/
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Publish
+publish/
+dist/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+
+# Logs
+*.log
+
+# SQLite DB
+mas.db
+
+# Generated
+wwwroot/*.css

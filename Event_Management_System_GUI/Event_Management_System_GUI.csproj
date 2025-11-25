@@ -19,6 +19,19 @@
 	  </PackageReference>
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
 	</ItemGroup>
+  
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="Pages\Shared\MainLayout.razor" />
+	  <_ContentIncludedByDefault Remove="Pages\Shared\NavMenu.razor" />
+	</ItemGroup>
+  
+	<ItemGroup>
+	  <Content Update="wwwroot\css\site.css">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+
 
 
 </Project>

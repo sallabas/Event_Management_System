@@ -1,125 +1,98 @@
 ﻿@page "/events/{EventId:int}/discussion"
+
 @using Event_Management_System.Models.Base
 @using Event_Management_System.Data
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<MasDbContext> DbFactory
+@using System.Linq
+
+
+@inject MasDbContext Db
 @inject NavigationManager Nav
 
-@code {
-    [Parameter]
-    public int EventId { get; set; }
+<h2 class="page-title">Discussion</h2>
 
-    private Event? selectedEvent;
-    private User? currentUser;
-    private string newComment = string.Empty;
+@if (comments == null)
+{
+    <p class="loading">Loading...</p>
+}
+else
+{
+    <div class="discussion-container">
+        @foreach (var c in comments)
+        {
+            <div class="comment-card">
+                <div class="comment-header">
+                    <strong>@c.Author.Username</strong>
+                   <span class="comment-date">@c.CreatedAt.ToString("dd MMM yyyy HH:mm")</span> 
+                </div>
 
-    private IEnumerable<DiscussionComment> Comments =>
-        selectedEvent?.Comments ?? Enumerable.Empty<DiscussionComment>();
+                <p class="comment-content">@c.Content</p>
+            </div>
+        }
+    </div>
 
-    private bool isEnrolled =>
-        selectedEvent != null &&
-        currentUser != null &&
-        selectedEvent.Enrollments.Any(e => e.UserId == currentUser.UserId);
+    <div class="comment-input-box">
+        <textarea class="comment-input"
+                  @bind="newComment"
+                  placeholder="Write your message..."></textarea>
 
-    protected override async Task OnParametersSetAsync()
-    {
-        using var db = await DbFactory.CreateDbContextAsync();
+        <button class="btn-send" @onclick="SendComment">Send</button>
+    </div>
 
-        currentUser = await db.Users.FirstOrDefaultAsync();
-
-        selectedEvent = await db.Events
-            .Include(e => e.Enrollments).ThenInclude(en => en.User)
-            .Include(e => e.Comments).ThenInclude(c => c.Author)
-            .FirstOrDefaultAsync(e => e.EventId == EventId);
-    }
-
-    private async Task SubmitComment()
-    {
-        if (selectedEvent == null || currentUser == null || string.IsNullOrWhiteSpace(newComment)) return;
-
-        if (!isEnrolled) return;
-
-        using var db = await DbFactory.CreateDbContextAsync();
-
-        var user = await db.Users.FindAsync(currentUser.UserId);
-        var ev = await db.Events
-            .Include(e => e.Enrollments)   
-            .FirstOrDefaultAsync(e => e.EventId == selectedEvent.EventId);
-
-        if (user == null || ev == null) return;
-
-        var comment = new DiscussionComment(user, ev, newComment);
-        db.DiscussionComments.Add(comment);
-        await db.SaveChangesAsync();
-
-        newComment = string.Empty;
-        await RefreshAsync();
-    }
-
-
-    private async Task RefreshAsync()
-    {
-        using var db = await DbFactory.CreateDbContextAsync();
-        selectedEvent = await db.Events
-            .Include(e => e.Enrollments).ThenInclude(en => en.User)
-            .Include(e => e.Comments).ThenInclude(c => c.Author)
-            .FirstOrDefaultAsync(e => e.EventId == EventId);
-
-        StateHasChanged();
-    }
-
-    private void GoBack() => Nav.NavigateTo($"/events/{EventId}");
+    <button class="btn-back" @onclick="GoBack">⬅ Back</button>
 }
 
-<div class="container mt-5">
-    <h4 class="mb-4">
-        <i class="bi bi-chat-left-text"></i> Event Discussion
-    </h4>
+@code {
+    [Parameter] public int EventId { get; set; }
 
-    @if (selectedEvent != null)
+    private List<DiscussionComment> comments;
+    private User currentUser;
+    private Event currentEvent;
+    private string newComment = "";
+
+
+
+    protected override async Task OnInitializedAsync()
     {
-        <h5 class="mb-3">@selectedEvent.EventTitle</h5>
 
-        @if (isEnrolled)
-        {
-            <div class="mb-3">
-                <textarea class="form-control" placeholder="Share your thoughts..." @bind="newComment" rows="3"></textarea>
-                <button class="btn btn-primary mt-2" @onclick="SubmitComment">
-                    <i class="bi bi-send"></i> Submit
-                </button>
-            </div>
-        }
-        else
-        {
-            <div class="alert alert-warning">
-                <i class="bi bi-exclamation-circle"></i> You must be enrolled in this event to comment.
-            </div>
-        }
+        currentUser = await Db.Users.FirstOrDefaultAsync();
 
-        @if (Comments.Any())
-        {
-            <ul class="list-group mb-4">
-                @foreach (var comment in Comments)
-                {
-                    <li class="list-group-item">
-                        <strong>@comment.Author?.Username:</strong> @comment.Content
-                        <br />
-                        <small class="text-muted">@comment.CreatedAt.ToString("g")</small>
-                    </li>
-                }
-            </ul>
-        }
-        else
-        {
-            <p class="text-muted">No comments yet.</p>
-        }
+        currentEvent = await Db.Events
+            .Include(e => e.Enrollments)
+            .FirstOrDefaultAsync(e => e.EventId == EventId);
 
-        <button class="btn btn-outline-secondary" @onclick="GoBack">
-            <i class="bi bi-arrow-left-circle"></i> Back to Event
-        </button>
+        await LoadComments();
     }
-    else
+
+    private async Task LoadComments()
     {
-        <p class="text-danger">Event not found.</p>
+
+        comments = await Db.DiscussionComments
+            .Where(d => d.TargetEventId == EventId)
+            .Include(d => d.Author)
+            .AsNoTracking()       // optional, performans için
+            .OrderByDescending(d => d.DiscussionCommentId) // 🚀 CreatedAt yerine ID üzerinden sıralama
+            .ToListAsync();
     }
-</div>
+
+    private async Task SendComment()
+    {
+        if (string.IsNullOrWhiteSpace(newComment) || currentUser == null || currentEvent == null)
+            return;
+
+
+        var comment = new DiscussionComment(currentUser, currentEvent, newComment);
+
+        Db.DiscussionComments.Add(comment);
+        await Db.SaveChangesAsync();
+
+        newComment = "";
+
+        await LoadComments();
+    }
+
+    private void GoBack()
+    {
+        Nav.NavigateTo($"/events/{EventId}");
+    }
+}

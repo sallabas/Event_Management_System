@@ -2,6 +2,72 @@
 @using Event_Management_System.Models.Base
 @using Event_Management_System.Data
 @using Microsoft.EntityFrameworkCore
+
+@inject MasDbContext Db
+@inject NavigationManager Nav
+
+<h2 class="page-title">Participants</h2>
+
+@if (participants == null)
+{
+    <p class="loading">Loading...</p>
+}
+else if (!participants.Any())
+{
+    <p class="no-users">No participants yet.</p>
+}
+else
+{
+    <div class="participant-grid">
+        @foreach (var user in participants)
+        {
+            <div class="participant-card">
+                <div class="avatar">@user.Username.Substring(0,1)</div>
+
+                <div class="info">
+                    <h4>@user.Username</h4>
+                    <p class="joined-date">Joined: @userEnrollDates[user.UserId].ToString("dd MMM yyyy")</p>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<button class="back-btn" @onclick="GoBack">⬅ Back</button>
+
+@code {
+    [Parameter] public int EventId { get; set; }
+
+    private List<User>? participants;
+    private Dictionary<int, DateTime> userEnrollDates = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var eventData = await Db.Events
+            .Include(e => e.Enrollments)
+            .ThenInclude(en => en.User)
+            .FirstOrDefaultAsync(e => e.EventId == EventId);
+
+        if (eventData != null)
+        {
+            participants = eventData.Enrollments.Select(en => en.User).ToList();
+
+            userEnrollDates = eventData.Enrollments
+                .ToDictionary(en => en.UserId, en => en.EnrollmentDate);
+        }
+    }
+
+    private void GoBack()
+    {
+        Nav.NavigateTo($"/events/{EventId}");
+    }
+}
+
+
+@*@page "/events/{EventId:int}/participants"
+@using Event_Management_System.Models.Base
+@using Event_Management_System.Data
+@using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<MasDbContext> DbFactory
 @inject NavigationManager Nav
 
@@ -54,4 +120,4 @@
             No participants enrolled in this event yet.
         </div>
     }
-</div>
+</div>*@

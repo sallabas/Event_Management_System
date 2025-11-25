@@ -1,9 +1,102 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+<div class="welcome-container">
 
-<h1>Hello, world!</h1>
+    <h1 class="welcome-title">Welcome to EvenMap</h1>
+    <p class="welcome-subtitle">Find & Join Amazing Events</p>
 
-Welcome to your new app.
+    <a href="/events" class="btn-browse">Browse Events</a>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+</div>
+
+
+@*
+@page "/"
+
+@using Event_Management_System.Models.Base
+@using Event_Management_System_GUI.Services
+@inject EventService EventService
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-9 col-md-10">
+            <!-- HERO -->
+            <div class="card shadow-lg border-0 mb-4 homepage-hero">
+                <div class="card-body p-4 p-md-5">
+                    <h1 class="display-5 fw-bold mb-3">Find &amp; Join Amazing Events</h1>
+                    <p class="lead mb-4 hero-text">
+                        Discover events, meet people, and explore new experiences — all in one place.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/events" class="btn btn-light btn-lg hero-btn-primary">
+                            Browse Events
+                        </a>
+                        <a href="/user/profile" class="btn btn-outline-light btn-lg">
+                            My Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HEADER + COUNTER -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4 mb-0">Upcoming Events</h2>
+                <small class="text-muted">
+                    @((Events?.Count ?? 0)) event(s)
+                </small>
+            </div>
+
+            @if (Events == null)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (!Events.Any())
+            {
+                <div class="alert alert-info">
+                    There are no upcoming events at the moment.
+                </div>
+            }
+            else
+            {
+                @foreach (var ev in Events)
+                {
+                    <div class="card shadow-sm border-0 mb-3 event-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="h5 mb-1">@ev.EventTitle</h3>
+                                    <div class="text-muted small">
+                                        @ev.StartDate.ToShortDateString() - @ev.EndDate.ToShortDateString()
+                                    </div>
+                                    <div class="mt-2">
+                                        <span class="badge bg-light text-primary border">
+                                            @ev.Venue?.VenueName
+                                        </span>
+                                    </div>
+                                </div>
+                                <a href="/event/details/@ev.EventId" class="btn btn-primary btn-sm">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Event_Management_System.Models.Base.Event> Events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Events = await EventService.GetAllEvents();
+    }
+}
+*@

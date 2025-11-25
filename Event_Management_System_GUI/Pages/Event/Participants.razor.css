@@ -1,0 +1,85 @@
+﻿.page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #12e061;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* LOADING / EMPTY */
+.loading, .no-users {
+    text-align: center;
+    color: #bfbfbf;
+}
+
+/* GRID */
+.participant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 22px;
+    padding: 20px;
+}
+
+/* CARD */
+.participant-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    display: flex;
+    padding: 16px;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    transition: 0.25s ease;
+}
+
+.participant-card:hover {
+    transform: translateY(-4px);
+    border-color: #12e061;
+}
+
+/* AVATAR */
+.avatar {
+    background: #12e061;
+    color: black;
+    width: 52px;
+    height: 52px;
+    font-size: 22px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+}
+
+/* INFO */
+.info h4 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.joined-date {
+    margin: 0;
+    color: #a5a5a5;
+    font-size: 14px;
+}
+
+/* BACK BUTTON */
+.back-btn {
+    margin-top: 20px;
+    background: #444;
+    border: none;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 16px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.back-btn:hover {
+    background: #666;
+}

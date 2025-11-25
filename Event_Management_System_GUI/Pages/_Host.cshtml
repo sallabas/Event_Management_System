@@ -1,19 +1,50 @@
-﻿@page
-@model Event_Management_System_GUI.Pages._Host
-
+﻿@page "/"
+@namespace Event_Management_System_GUI.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     Layout = null;
 }
 
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 <head>
-    <title></title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>EvenMap</title>
+
+    <base href="~/" />
+
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="Event_Management_System_GUI.styles.css" rel="stylesheet" />
 </head>
+
 <body>
-<div>
-    
+<div class="layout">
+
+    @*
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <nav>
+            <a class="nav-link" href="/">Home</a>
+            <a class="nav-link" href="/events">Events</a>
+            <a class="nav-link" href="/my-enrollments">My Enrollments</a>
+            <a class="nav-link" href="/messages">Messages</a>
+            <a class="nav-link" href="/profile">Profile</a>
+        </nav>
+    </div>
+    *@
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <app>
+            <component type="typeof(App)" render-mode="ServerPrerendered" />
+        </app>
+    </div>
+
 </div>
+
+<script src="_framework/blazor.server.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-﻿namespace Event_Management_System_GUI.Pages.Services;
+﻿namespace Event_Management_System_GUI.Services;
 
 public class PromotionService
 {

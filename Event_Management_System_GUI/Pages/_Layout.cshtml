@@ -1,32 +1,45 @@
-﻿@using Microsoft.AspNetCore.Components.Web
-@namespace Event_Management_System_GUI.Pages
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+﻿@*
+@inherits Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>EvenMap</title>
+
     <base href="~/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
     <link href="Event_Management_System_GUI.styles.css" rel="stylesheet" />
-    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
 </head>
-<body>
-    @RenderBody()
 
-    <div id="blazor-error-ui">
-        <environment include="Staging,Production">
-            An error has occurred. This application may no longer respond until reloaded.
-        </environment>
-        <environment include="Development">
-            An unhandled exception has occurred. See browser dev tools for details.
-        </environment>
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+<body>
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <nav>
+            <a class="nav-link @(Context.Request.Path == "/" ? "active" : "")" href="/">Home</a>
+            <a class="nav-link @(Context.Request.Path.StartsWithSegments("/events") ? "active" : "")" href="/events">Events</a>
+            <a class="nav-link @(Context.Request.Path.StartsWithSegments("/my-enrollments") ? "active" : "")" href="/my-enrollments">My Enrollments</a>
+            <a class="nav-link @(Context.Request.Path.StartsWithSegments("/messages") ? "active" : "")" href="/messages">Messages</a>
+            <a class="nav-link @(Context.Request.Path.StartsWithSegments("/profile") ? "active" : "")" href="/profile">Profile</a>
+
+        </nav>
     </div>
 
-    <script src="_framework/blazor.server.js"></script>
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <app>
+            @RenderBody()
+        </app>
+    </div>
+
+</div>
+
+<script src="_framework/blazor.server.js"></script>
 </body>
 </html>
+*@
