@@ -23,6 +23,7 @@ namespace Event_Management_System.Data
             var organizer = new Organizer("Kemal", "kemal@mail.com", new DateTime(1990, 5, 20), "pass123", "Tech Events", true, 0);
             var regularUser = new RegularUser("Ali", "ali@mail.com", new DateTime(1995, 6, 10), "secret", "Warsaw");
 
+            
             var organizerPayment = new PaymentDetail(organizer,"Kemal Account", "PL60102010260000042270201111");
             organizer.SetPaymentDetail(organizerPayment);
 
@@ -45,6 +46,11 @@ namespace Event_Management_System.Data
             };
 
             var enrollment = new Enrollment(regularUser, event1, enrollmentDate);
+            
+            // manual 
+            event1.Enrollments.Add(enrollment);
+            regularUser.Enrollments.Add(enrollment);
+            
             var comment = new DiscussionComment(regularUser, event1, "This looks amazing!");
 
             var promo = new PromotedRequest(event1, organizer, promotionRequestDate, 15.0);

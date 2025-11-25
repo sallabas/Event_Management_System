@@ -36,6 +36,8 @@ public class Enrollment
         EventId = ev.EventId;
         
         EnrollmentDate = date;
+        
+        
     }
     
 }

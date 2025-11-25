@@ -1,0 +1,126 @@
+﻿/* ===== PAGE TITLE ===== */
+.page-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #12e061;
+}
+
+/* ===== GRID ===== */
+.event-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 28px;
+    padding: 20px;
+}
+
+/* ===== EVENT CARD ===== */
+.event-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    overflow: hidden;
+    backdrop-filter: blur(6px);
+
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.3s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-6px);
+    border-color: #12e061;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+}
+
+/* ===== IMAGE ===== */
+.event-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    filter: brightness(80%);
+    transition: filter 0.3s ease;
+}
+
+.event-card:hover .event-image {
+    filter: brightness(95%);
+}
+
+/* ===== CONTENT ===== */
+.event-content {
+    padding: 18px;
+    color: #e6e6e6;
+}
+
+.event-content h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+/* ===== META ===== */
+.event-date,
+.event-location {
+    color: #a8a8a8;
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.event-date i, .event-location i {
+    margin-right: 6px;
+    color: #12e061;
+}
+
+/* ===== CATEGORIES ===== */
+.event-categories {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.category-chip {
+    background: rgba(18, 224, 97, 0.15);
+    color: #12e061;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    border: 1px solid rgba(18, 224, 97, 0.25);
+}
+
+/* ===== FOOTER ===== */
+.event-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 18px;
+    font-weight: 500;
+    align-items: center;
+}
+
+.participants {
+    color: #cfcfcf;
+    font-size: 14px;
+}
+
+.participants i {
+    margin-right: 6px;
+    color: #12e061;
+}
+
+/* ===== DETAILS BUTTON ===== */
+.join-status {
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.not-joined {
+    background: #12e061;
+    color: black;
+    transition: background 0.2s ease;
+}
+
+.not-joined:hover {
+    background: #0bb94f;
+}

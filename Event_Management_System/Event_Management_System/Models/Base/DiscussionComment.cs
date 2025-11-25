@@ -29,7 +29,7 @@ public class DiscussionComment
             _content = value;
         }
     }
-    public DateTime CreatedAt { get; }
+    public DateTime CreatedAt { get; set; }
 
     // parameterless constructor for ef core
     protected DiscussionComment() { }

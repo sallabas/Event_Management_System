@@ -10,11 +10,19 @@ namespace Event_Management_System
         {
             Console.WriteLine("=== MAS Project EF Core Test ===");
 
+            var basePath = AppContext.BaseDirectory;  // bin/Debug/net8.0
+            var projectRoot = Path.GetFullPath(Path.Combine(basePath, @"../../../"));
+            var dbPath = Path.Combine(projectRoot, "mas.db");
+            
+            Console.WriteLine("DB PATH (Console) => " + dbPath);
+            
+            /*
             var options = new DbContextOptionsBuilder<MasDbContext>()
                 .UseSqlite("Data Source=mas.db")
                 .Options;
+                */
 
-            using (var context = new MasDbContext(options))
+            using (var context = new MasDbContext())
             {
                 // context.Database.EnsureCreated();
                 context.Database.Migrate();

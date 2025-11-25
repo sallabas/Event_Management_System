@@ -5,6 +5,8 @@ namespace Event_Management_System.Data
 {
     public class MasDbContext : DbContext
     {
+        // for database configuration (mas.db was appearing in bin folder)
+        public MasDbContext() : base() { }
         public MasDbContext(DbContextOptions<MasDbContext> options) : base(options) {}
 
         public DbSet<User> Users => Set<User>();
@@ -20,16 +22,51 @@ namespace Event_Management_System.Data
         public DbSet<Transaction> Transactions => Set<Transaction>();
         public DbSet<DiscussionComment> DiscussionComments => Set<DiscussionComment>();
         public DbSet<PromotedRequest> PromotedRequests => Set<PromotedRequest>();
-        
-        // If there is no Dependency Injection, EF Core can still use SQLite
+
+
+        // mandatory working path -> related to "GUI -> .db" connection
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite("Data Source=mas_project.db");
+                var dbPath = @"C:\Users\kysal\RiderProjects\Event_Management_System\Event_Management_System\mas.db";
+
+        
+                optionsBuilder.UseSqlite($"Data Source={dbPath}");
             }
         }
 
+        
+        /*
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                // 1) Çalışma dizininden yukarı doğru çık
+                var dir = new DirectoryInfo(AppContext.BaseDirectory);
+
+                while (dir != null && dir.Name != "Event_Management_System")
+                {
+                    dir = dir.Parent;
+                }
+
+                if (dir == null)
+                {
+                    throw new Exception("Project root (Event_Management_System) could not be found.");
+                }
+
+                // 2) DB dosyasının kesin doğru konumu
+                var dbPath = Path.Combine(dir.FullName, "mas.db");
+
+                Console.WriteLine("EF REAL DB PATH => " + dbPath);
+
+                // 3) EF Core bağlantıyı yap
+                optionsBuilder.UseSqlite($"Data Source={dbPath}");
+            }
+        }
+        */
+        
+        
         protected override void OnModelCreating(ModelBuilder b)
         {
             b.Entity<User>()
