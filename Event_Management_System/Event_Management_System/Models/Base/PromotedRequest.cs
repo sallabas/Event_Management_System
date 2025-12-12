@@ -19,6 +19,8 @@ namespace Event_Management_System.Models.Base
         
         public DateTime RequestDate { get; set; }
         public PromotionStatus Status { get; private set; }
+        public DateTime PromotionEndDate { get; private set; }
+
 
         
         public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
@@ -55,7 +57,10 @@ namespace Event_Management_System.Models.Base
 
 
             RequestDate = requestDate;
-            Status = PromotionStatus.Pending;
+             Status = PromotionStatus.Pending;
+             
+             PromotionEndDate = requestDate.AddDays(5);
+
         }
 
         public void Confirm()
@@ -68,6 +73,27 @@ namespace Event_Management_System.Models.Base
             Status = PromotionStatus.Failed;
         }
 
+        public void UpdateStatus(PromotionStatus newStatus)
+        {
+            Status = newStatus;
+        }
+        
+        private bool DisablePromote(PromotedRequest? req)
+        {
+            if (req == null)
+                return false;
+
+            // Aktif promote varsa → butonu disable et
+            if (req.Status == PromotionStatus.Confirmed &&
+                req.PromotionEndDate > DateTime.Now)
+                return true;
+
+            // Promosyon süresi geçtiyse → yeniden promote edilebilir
+            return false;
+        }
+
+
+        
         public void AddTransaction(double amount, DateTime date)
         {
             if (Organizer.PaymentDetail == null)
@@ -92,4 +118,5 @@ namespace Event_Management_System.Models.Base
         Confirmed,
         Failed
     }
+    
 }
