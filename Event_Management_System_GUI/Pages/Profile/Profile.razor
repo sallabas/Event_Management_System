@@ -1,5 +1,79 @@
-﻿<h3>Profile</h3>
+﻿@page "/profile"
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<div class="profile-wrapper">
+    @if (user == null)
+    {
+        <p class="not-logged">You must be logged in to view this page.</p>
+
+        <button class="btn login-btn" @onclick="GoLogin">
+            Go to Login
+        </button>
+    }
+    else
+    {
+        <div class="profile-card">
+
+            <div class="avatar">👤</div>
+
+            <h2 class="username">@user.Username</h2>
+
+            <p class="age">Age: @CalculateAge(user.DateOfBirth)</p>
+
+            <div class="info-row">
+                <span class="label">Email:</span>
+                <span class="value">@user.Email</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Account Type:</span>
+                <span class="value">@user.UserTypes.ToString()</span>
+            </div>
+
+            <div class="stats">
+                <div>
+                    <span class="stat-number">@user.FollowersCount</span>
+                    <span class="stat-label">Followers</span>
+                </div>
+                <div>
+                    <span class="stat-number">@user.FollowingCount</span>
+                    <span class="stat-label">Following</span>
+                </div>
+            </div>
+
+            <!-- Logout -->
+            <button class="btn logout-btn" @onclick="Logout">
+                Logout
+            </button>
+        </div>
+    }
+</div>
 
 @code {
-    
+    private User? user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await Auth.GetCurrentUserAsync();
+    }
+
+    private void GoLogin()
+    {
+        Nav.NavigateTo("/login");
+    }
+
+    private async Task Logout()
+    {
+        await Auth.LogoutAsync();
+        Nav.NavigateTo("/");
+    }
+
+    private int CalculateAge(DateTime dob)
+    {
+        var today = DateTime.Today;
+        var age = today.Year - dob.Year;
+        if (dob.Date > today.AddYears(-age)) age--;
+        return age;
+    }
 }

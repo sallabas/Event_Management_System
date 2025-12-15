@@ -97,7 +97,6 @@ else
             return;
         }
 
-        // 🔥 Kullanıcı etkinliğe kayıtlı mı?
         bool isEnrolled = currentEvent.Enrollments
             .Any(e => e.UserId == currentUser.UserId);
 

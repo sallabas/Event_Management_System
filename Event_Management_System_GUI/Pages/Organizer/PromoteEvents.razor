@@ -1,5 +1,162 @@
-﻿<h3>PromoteEvents</h3>
+﻿@page "/organizer/promotions"
+@using Event_Management_System.Models.Base
+@using Microsoft.EntityFrameworkCore
+
+@inject AuthService Auth
+@inject MasDbContext Db
+@inject NavigationManager Nav
+
+<h2 class="title">Promote Your Events</h2>
+
+@if (currentUser == null)
+{
+    <p class="error">You must be logged in.</p>
+}
+else if (currentUser.UserTypes != UserType.Organizer)
+{
+    <p class="error">Only organizers can promote events.</p>
+}
+else if (myEvents.Count == 0)
+{
+    <p class="info">You have no events to promote.</p>
+}
+else
+{
+    <div class="promote-list">
+        @foreach (var ev in myEvents)
+        {
+            // var req = ev.PromotedRequests.FirstOrDefault();
+            var req =
+                ev.PromotedRequests
+                    .OrderByDescending(pr => pr.RequestDate)
+                    .FirstOrDefault();
+
+
+            <div class="promote-card">
+
+                <img class="event-img" src="https://picsum.photos/300/200?random=@ev.EventId" />
+
+                <div class="event-info">
+                    <h3>@ev.EventTitle</h3>
+
+                    <p class="date">📅 @ev.StartDate.ToString("dd MMM yyyy HH:mm")</p>
+                    <p class="loc">📍 @ev.Venue?.Location?.City, @ev.Venue?.Location?.Country</p>
+
+                    @if (req != null)
+                    {
+                        <p class="status">
+                            Status:
+                            <span class="@GetStatusClass(req.Status)">
+                                @req.Status
+                            </span>
+                        </p>
+                    }
+
+                    <div class="buttons">
+                        <button class="btn-view"
+                                @onclick="@(() => Nav.NavigateTo($"/events/{ev.EventId}"))">
+                            View
+                        </button>
+
+                        <button class="btn-promote"
+                                disabled="@DisablePromote(req)"
+                                @onclick="@(() => Nav.NavigateTo($"/organizer/payment/checkout/{ev.EventId}/10.99"))">
+                            Promote
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        }
+    </div>
+}
 
 @code {
+    private User? currentUser;
+    private List<Event> myEvents = new();
+
+   // private const int PromotionMinutes = 1; // cooldown
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEvents();
+    }
+
+    private async Task LoadEvents()
+    {
+        currentUser = await Auth.GetCurrentUserAsync();
+
+        if (currentUser != null)
+        {
+            myEvents = await Db.Events
+                .AsNoTracking() 
+                .Include(e => e.PromotedRequests)
+                .Include(e => e.Venue).ThenInclude(v => v.Location)
+                .Where(e => e.OrganizerId == currentUser.UserId)
+                .ToListAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await PeriodicRefresh();
+    }
+
+    private async Task PeriodicRefresh()
+    {
+        while (true)
+        {
+            await LoadEvents();    
+            StateHasChanged();      
+            await Task.Delay(2000); 
+        }
+    }
+
+    private bool DisablePromote(PromotedRequest? req)
+    {
+        if (req == null)
+            return false;
+
+        if (req.Status == PromotionStatus.Pending ||
+            req.Status == PromotionStatus.Confirmed)
+            return true;
+
+        return false;
+    }
+
+    /*
+    private bool DisablePromote(PromotedRequest? req)
+    {
+        if (req == null)
+            return false; 
+
+        if (req.Status == PromotionStatus.Pending)
+            return true;
+
+        if (req.Status == PromotionStatus.Confirmed)
+        {
+            var promotionEnd = req.RequestDate.AddMinutes(PromotionMinutes);
+
+            if (promotionEnd > DateTime.Now)
+                return true; 
+        }
+
+        return false;
+    }
+    */
     
+
+    private string GetStatusClass(PromotionStatus status)
+        => status switch
+        {
+            PromotionStatus.Pending => "status-pending",
+            PromotionStatus.Confirmed => "status-confirmed",
+            PromotionStatus.Expired => "status-expired",
+            PromotionStatus.Failed => "status-failed",
+            _ => ""
+        };
+
 }
+

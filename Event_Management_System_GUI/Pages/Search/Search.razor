@@ -1,5 +1,130 @@
-﻿<h3>Search</h3>
+﻿@page "/search"
+
+@inject SearchService SearchService
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<h2 class="search-title">Search</h2>
+
+<div class="search-box">
+    <input  class="search-input"
+            placeholder="Search users or events..."
+            @bind="query"
+            @bind:event="oninput"
+            @onkeypress="HandleKeyPress" />
+
+    <button class="search-btn" @onclick="PerformSearch">
+        🔍
+    </button>
+</div>
+
+@if (loading)
+{
+    <p class="search-status">Searching...</p>
+}
+else if (!hasSearched)
+{
+    <p class="search-status">Type something to begin searching.</p>
+}
+else if (noResults)
+{
+    <p class="search-status">No users or events found.</p>
+}
+else
+{
+    <div class="search-results">
+
+        @* USERS *@
+        @if (results.Users.Any())
+        {
+            <h3 class="result-header">Profiles</h3>
+            <div class="result-grid">
+                @foreach (var u in results.Users)
+                {
+                    <div class="result-card" @onclick="@(() => OnUserSelected(u.UserId))">
+                        <div class="result-icon">👤</div>
+                        <div class="result-title">@u.Username</div>
+                    </div>
+                }
+            </div>
+        }
+
+        @* EVENTS *@
+        @if (results.Events.Any())
+        {
+            <h3 class="result-header">Events</h3>
+            <div class="result-grid">
+                @foreach (var e in results.Events)
+                {
+                    <div class="result-card" @onclick="@(() => OnEventSelected(e.EventId))">
+                        <div class="result-icon">📅</div>
+                        <div class="result-title">@e.EventTitle</div>
+                    </div>
+                }
+            </div>
+        }
+
+    </div>
+}
 
 @code {
-    
+    private string query = "";
+    private bool loading = false;
+    private bool hasSearched = false;
+    private bool noResults = false;
+
+    private GlobalSearchResult results = new();
+
+    private async Task PerformSearch()
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            hasSearched = false;
+            results = new();
+            noResults = false;
+            return;
+        }
+
+        loading = true;
+        hasSearched = true;
+
+        results = await SearchService.SearchAsync(query);
+        noResults = !results.Users.Any() && !results.Events.Any();
+
+        loading = false;
+        StateHasChanged();
+    }
+
+    private async Task<bool> IsLoggedIn()
+    {
+        var user = await Auth.GetCurrentUserAsync();
+        return user != null;
+    }
+
+    private async void OnUserSelected(int userId)
+    {
+        if (!await IsLoggedIn())
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+        Nav.NavigateTo($"/user/{userId}");
+    }
+
+    private async void OnEventSelected(int eventId)
+    {
+        if (!await IsLoggedIn())
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+        Nav.NavigateTo($"/events/{eventId}");
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await PerformSearch();
+    }
 }
+

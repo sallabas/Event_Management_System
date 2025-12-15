@@ -83,12 +83,12 @@ namespace Event_Management_System.Models.Base
             if (req == null)
                 return false;
 
-            // Aktif promote varsa → butonu disable et
+            // if there is a active promote, disable the button
             if (req.Status == PromotionStatus.Confirmed &&
                 req.PromotionEndDate > DateTime.Now)
                 return true;
 
-            // Promosyon süresi geçtiyse → yeniden promote edilebilir
+            // if promotion has expired, make it possible to repromote
             return false;
         }
 
@@ -116,6 +116,7 @@ namespace Event_Management_System.Models.Base
     {
         Pending,
         Confirmed,
+        Expired,
         Failed
     }
     

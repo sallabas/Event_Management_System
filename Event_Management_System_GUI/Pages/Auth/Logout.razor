@@ -1,5 +1,11 @@
-﻿<h3>Logout</h3>
+﻿@page "/logout"
+@inject AuthService Auth
+@inject NavigationManager Nav
 
 @code {
-    
+    protected override void OnInitialized()
+    {
+        Auth.LogoutAsync();
+        Nav.NavigateTo("/");
+    }
 }

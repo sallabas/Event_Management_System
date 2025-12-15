@@ -1,0 +1,130 @@
+﻿.title {
+    text-align: center;
+    font-size: 28px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    color: white;
+    font-weight: bold;
+}
+
+.error, .info {
+    text-align: center;
+    font-size: 18px;
+    color: #ccc;
+}
+
+.promote-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    max-width: 900px;
+    margin: 0 auto; /* middle alignment */
+    padding-bottom: 50px;
+}
+
+.promote-card {
+    background-color: #111;
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    box-shadow: 0 0 15px rgba(18, 224, 97, 0.05);
+    transition: 0.25s ease;
+}
+
+.promote-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(18, 224, 97, 0.25);
+}
+
+.event-img {
+    width: 160px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.event-info {
+    flex: 1;
+}
+
+.event-info h3 {
+    color: white;
+    margin: 0 0 6px 0;
+    font-size: 20px;
+}
+
+.date, .loc {
+    color: #b5b5b5;
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+/* STATUS LABELS */
+.status {
+    margin-top: 6px;
+    font-size: 14px;
+}
+
+.status-pending {
+    color: #ffcc00;
+    font-weight: bold;
+}
+
+.status-confirmed {
+    color: #12E061;
+    font-weight: bold;
+}
+
+.status-failed {
+    color: #ff4444;
+    font-weight: bold;
+}
+.status-expired {
+    color: #ffb347;
+    font-weight: 700;
+}
+
+/* BUTTON AREA */
+.buttons {
+    margin-top: 12px;
+    display: flex;
+    gap: 12px;
+}
+
+.btn-view {
+    background-color: #12E061;
+    color: black;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-view:hover {
+    background-color: #0cb950;
+}
+
+.btn-promote {
+    background-color: #0099ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-promote:hover {
+    background-color: #007ad1;
+}
+
+.btn-promote:disabled {
+    background-color: #444;
+    cursor: not-allowed;
+}
+

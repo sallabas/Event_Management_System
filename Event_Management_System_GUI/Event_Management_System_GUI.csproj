@@ -11,6 +11,7 @@
 </ItemGroup>
   
 	<ItemGroup>
+	  <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
@@ -29,6 +30,10 @@
 	  <Content Update="wwwroot\css\site.css">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	</ItemGroup>
+  
+	<ItemGroup>
+	  <Folder Include="Pages\Controllers\" />
 	</ItemGroup>
 
 

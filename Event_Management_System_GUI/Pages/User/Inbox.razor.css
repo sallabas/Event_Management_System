@@ -1,0 +1,61 @@
+﻿.inbox-title {
+    color: white;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.inbox-list {
+    width: 60%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.inbox-item {
+    background: #1e1e1e;
+    padding: 15px 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.inbox-item:hover {
+    background: #2b2b2b;
+}
+
+.avatar {
+    font-size: 32px;
+}
+
+.inbox-info {
+    flex-grow: 1;
+    color: white;
+}
+
+.username {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.last-message {
+    color: #aaa;
+    font-size: 14px;
+}
+
+.timestamp {
+    color: #888;
+    font-size: 13px;
+    min-width: 50px;
+    text-align: right;
+}
+
+.loading-text,
+.empty-text {
+    color: #aaa;
+    text-align: center;
+    margin-top: 40px;
+}

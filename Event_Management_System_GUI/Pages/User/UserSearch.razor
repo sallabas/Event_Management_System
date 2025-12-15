@@ -1,5 +1,46 @@
-﻿<h3>UserSearch</h3>
+﻿@page "/users"
+
+@inject UserService Users
+@inject NavigationManager Nav
+
+<h3>Find Users</h3>
+
+<input type="text" @bind="searchText" @bind:event="oninput" class="form-control" placeholder="Search users..." />
+
+@if (results != null)
+{
+    <ul class="list-group mt-3">
+        @foreach (var u in results)
+        {
+            <li class="list-group-item" @onclick="() => GoProfile(u.UserId)" style="cursor:pointer;">
+                @u.Username — @u.Email
+            </li>
+        }
+    </ul>
+}
 
 @code {
-    
+    private string searchText = "";
+    private List<User> results;
+
+    protected override void OnInitialized()
+    {
+        results = new();
+    }
+
+    private async Task OnSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            results = new();
+            return;
+        }
+
+        results = await Users.SearchUsersAsync(searchText);
+    }
+
+    private void GoProfile(int id)
+    {
+        Nav.NavigateTo($"/user/{id}");
+    }
 }

@@ -1,5 +1,109 @@
-﻿<h3>Chat</h3>
+﻿@page "/messages/chat/{otherUserId:int}"
+
+@inject MessageService MessageService
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<h2 class="chat-title">Chat</h2>
+
+@if (loading)
+{
+    <p class="loading-text">Loading messages...</p>
+}
+else if (currentUser == null)
+{
+    <p class="error-text">You must be logged in to chat.</p>
+}
+else
+{
+    <div class="chat-container" @ref="chatDiv">
+
+        @if (messages.Any())
+        {
+            @foreach (var msg in messages)
+            {
+                <div class="msg-row @(msg.SenderId == currentUser.UserId ? "sent" : "received")">
+                    <div class="msg-bubble">
+                        @msg.Content
+                        <div class="msg-time">
+                            @msg.SentDate.ToString("HH:mm")
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="no-messages">No messages yet. Say hello!</p>
+        }
+
+    </div>
+
+    <div class="msg-input-area">
+        <input class="msg-input"
+               placeholder="Type a message..."
+               @bind="newMessage"
+               @bind:event="oninput"
+               @onkeypress="HandleKeyPress" />
+
+        <button class="send-btn" @onclick="Send">
+            Send
+        </button>
+    </div>
+}
 
 @code {
-    
+    [Parameter] public int otherUserId { get; set; }
+
+    private User? currentUser;
+    private List<Message> messages = new();
+    private string newMessage = "";
+    private bool loading = true;
+
+    private ElementReference chatDiv;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await Auth.GetCurrentUserAsync();
+
+        if (currentUser == null)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        await LoadMessages();
+        loading = false;
+    }
+
+    private async Task LoadMessages()
+    {
+        messages = await MessageService.GetChatAsync(currentUser.UserId, otherUserId);
+        await ScrollToBottom();
+    }
+
+    private async Task Send()
+    {
+        if (string.IsNullOrWhiteSpace(newMessage))
+            return;
+
+        await MessageService.SendMessageAsync(currentUser.UserId, otherUserId, newMessage);
+        newMessage = "";
+
+        await LoadMessages();
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await Send();
+    }
+
+    private async Task ScrollToBottom()
+    {
+        await Task.Delay(100);
+        await JS.InvokeVoidAsync("scrollChatToBottom", chatDiv);
+    }
+
+    [Inject] private IJSRuntime JS { get; set; }
 }

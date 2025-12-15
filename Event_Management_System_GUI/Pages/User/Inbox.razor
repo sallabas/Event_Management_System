@@ -1,5 +1,72 @@
-﻿<h3>Inbox</h3>
+﻿@page "/messages"
+@inject MessageService MessageService
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<h2 class="inbox-title">Messages</h2>
+
+@if (loading)
+{
+    <p class="loading-text">Loading conversations...</p>
+}
+else if (!inbox.Any())
+{
+    <p class="empty-text">You have no conversations yet.</p>
+}
+else
+{
+    <div class="inbox-list">
+
+        @foreach (var item in inbox)
+        {
+            <div class="inbox-item" @onclick="() => OpenChat(item.User.UserId)">
+                
+                <div class="avatar">👤</div>
+
+                <div class="inbox-info">
+                    <div class="username">@item.User.Username</div>
+                    <div class="last-message">
+                        @Shorten(item.LastMessage.Content)
+                    </div>
+                </div>
+
+                <div class="timestamp">
+                    @item.LastMessage.SentDate.ToString("HH:mm")
+                </div>
+
+            </div>
+        }
+
+    </div>
+}
 
 @code {
-    
+    private User? currentUser;
+    private List<(User User, Message LastMessage)> inbox = new();
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await Auth.GetCurrentUserAsync();
+
+        if (currentUser == null)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        inbox = await MessageService.GetInboxAsync(currentUser.UserId);
+        loading = false;
+    }
+
+    private void OpenChat(int otherUserId)
+    {
+        Nav.NavigateTo($"/messages/chat/{otherUserId}");
+    }
+
+    private string Shorten(string text)
+    {
+        if (text.Length <= 35) return text;
+        return text.Substring(0, 35) + "...";
+    }
 }

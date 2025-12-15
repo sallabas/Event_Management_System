@@ -1,5 +1,89 @@
-﻿<h3>MyEvents</h3>
+﻿@page "/organizer/events"
+@using Event_Management_System.Models.Base
+@using Microsoft.EntityFrameworkCore
+
+@inject AuthService Auth
+@inject MasDbContext Db
+@inject NavigationManager Nav
+
+<div class="events-container">
+
+    @if (currentUser == null)
+    {
+        <p class="error-message">You must be logged in.</p>
+        <button class="btn" @onclick="GoLogin">Go to Login</button>
+    }
+    else if (currentUser.UserTypes != UserType.Organizer)
+    {
+        <p class="error-message">Only organizers can view this page.</p>
+        <button class="btn" @onclick="GoHome">Return Home</button>
+    }
+    else
+    {
+        <h2 class="page-title">My Events</h2>
+
+        @if (myEvents.Count == 0)
+        {
+            <p class="empty-text">You haven't created any events yet.</p>
+        }
+        else
+        {
+            <div class="event-list">
+                @foreach (var ev in myEvents)
+                {
+                    <div class="event-card">
+                        <img src="https://picsum.photos/400/250?random=@ev.EventId"
+                             class="event-image" />
+
+                        <div class="event-info">
+                            <h3 class="event-title">@ev.EventTitle</h3>
+
+                            <p class="event-date">
+                                📅 @ev.StartDate.ToString("dd MMM yyyy HH:mm")
+                            </p>
+
+                            <p class="event-location">
+                                📍 @ev.Venue?.Location?.City, @ev.Venue?.Location?.Country
+                            </p>
+
+                            <p class="event-participants">
+                                👥 @ev.Enrollments.Count participant(s)
+                            </p>
+                        </div>
+
+                        <div class="event-actions">
+                            <button class="btn view-btn" @onclick="() => ViewEvent(ev.EventId)">View</button>
+                            <button class="btn promote-btn" @onclick="() => PromoteEvent(ev.EventId)">Promote</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
 
 @code {
-    
+    private User? currentUser;
+    private List<Event> myEvents = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await Auth.GetCurrentUserAsync();
+
+        if (currentUser != null && currentUser.UserTypes == UserType.Organizer)
+        {
+            myEvents = await Db.Events
+                .Include(e => e.Venue).ThenInclude(v => v.Location)
+                .Include(e => e.Enrollments)
+                .Where(e => e.Organizer.UserId == currentUser.UserId)
+                .OrderByDescending(e => e.StartDate)
+                .ToListAsync();
+        }
+    }
+
+    private void ViewEvent(int id) => Nav.NavigateTo($"/events/{id}");
+    private void PromoteEvent(int id) => Nav.NavigateTo($"/organizer/promote/{id}");
+
+    private void GoLogin() => Nav.NavigateTo("/login");
+    private void GoHome() => Nav.NavigateTo("/");
 }

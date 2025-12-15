@@ -1,5 +1,158 @@
-﻿<h3>MockPayment</h3>
+﻿@page "/organizer/payment/checkout/{EventId:int}/{amount:decimal}"
+
+@using Event_Management_System.Models.Base
+@using Microsoft.EntityFrameworkCore
+@inject MasDbContext Db
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<h2 class="title">Payment Checkout</h2>
+
+@if (isLoading)
+{
+    <p>Processing payment...</p>
+    return;
+}
+
+@if (currentUser == null)
+{
+    <p class="error">You must be logged in.</p>
+    return;
+}
+
+@if (paymentDetail == null)
+{
+    <p class="error">You must add payment details before promoting an event.</p>
+    <button class="btn" @onclick="GoPaymentSettings">Go to Payment Details</button>
+    return;
+}
+
+<div class="checkout-box">
+    <h3>Promote Event</h3>
+
+    <p><strong>Event:</strong> @targetEvent?.EventTitle</p>
+    <p><strong>Promotion Cost:</strong> $10.99</p>
+
+    <button class="btn-pay" @onclick="HandlePayment">
+        Pay & Promote
+    </button>
+</div>
 
 @code {
+    [Parameter] public int EventId { get; set; }
+    [Parameter] public decimal Amount { get; set; }
+
+
+    private Organizer? currentUser;
+    private PaymentDetail? paymentDetail;
+    private Event? targetEvent;
+
+    private bool isLoading = false;
     
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await Auth.GetCurrentUserAsync();
+        currentUser = user as Organizer;
+
+        if (currentUser == null)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        targetEvent = await Db.Events
+            .FirstOrDefaultAsync(e => e.EventId == EventId);
+
+        paymentDetail = await Db.PaymentDetails
+            .FirstOrDefaultAsync(p => p.OwnerUserId == currentUser.UserId);
+    }
+
+    private async Task HandlePayment()
+    {
+        if (targetEvent == null || currentUser == null || paymentDetail == null)
+            return;
+
+        isLoading = true;
+
+        // Simulate payment processing delay
+        await Task.Delay(1500);
+
+        bool success = true;
+        isLoading = false;
+
+        if (success)
+        {
+            // ---- CREATE PENDING PROMOTION REQUEST ----
+            var promoted = new PromotedRequest(
+                targetEvent,
+                currentUser,
+                DateTime.Now,
+                10.99   
+            );
+            
+            Db.PromotedRequests.Add(promoted);
+            await Db.SaveChangesAsync();
+            
+            // ---- CREATE TRANSACTION RECORD ----
+            var transaction = new Transaction(
+                amount: 10.99,
+                transactionDate: DateTime.Now,
+                paymentDetail: paymentDetail,
+                promotedRequest: promoted
+            );
+
+            Db.Transactions.Add(transaction);
+            await Db.SaveChangesAsync();
+
+            // ---- TRIGGER BACKGROUND CONFIRMATION ----
+            await PromotionBackgroundService.AddPendingRequestAsync(promoted.PromotedRequestId);
+
+            Nav.NavigateTo("/organizer/promotions");
+        }
+        else
+        {
+            errorMessage = "Mock payment failed.";
+        }
+        
+        
+    }
+
+    /*
+    private async Task HandlePayment()
+    {
+        if (targetEvent == null || currentUser == null || paymentDetail == null)
+            return;
+
+        isLoading = true;
+
+        await Task.Delay(1500); // MOCK processing
+
+        bool success = true; // fake success
+        isLoading = false;
+
+        if (success)
+        {
+            // CREATE PROMOTED REQUEST — CORRECT VERSION
+            var promoted = new PromotedRequest(
+                targetEvent,
+                currentUser,
+                DateTime.Now,
+                10.99
+            );
+
+            Db.PromotedRequests.Add(promoted);
+            await Db.SaveChangesAsync();
+
+            Nav.NavigateTo("/organizer/promotions");
+        }
+    }
+    */
+    
+
+    private void GoPaymentSettings()
+    {
+        Nav.NavigateTo("/organizer/payment");
+    }
 }

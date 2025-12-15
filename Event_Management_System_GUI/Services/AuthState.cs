@@ -1,6 +1,16 @@
-﻿namespace Event_Management_System_GUI.Services;
+﻿using Event_Management_System.Models.Base;
 
 public class AuthState
 {
-    
+    public User? CurrentUser { get; private set; }
+
+    public event Action? OnChange;
+
+    public void SetUser(User? user)
+    {
+        CurrentUser = user;
+        NotifyStateChanged();
+    }
+
+    private void NotifyStateChanged() => OnChange?.Invoke();
 }

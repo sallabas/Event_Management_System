@@ -129,3 +129,40 @@
 .not-joined:hover {
     background: #0bb94f;
 }
+
+/* ===== PROMOTED BADGE ===== */
+.promoted-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+
+    background: rgba(18, 224, 97, 0.18);
+    color: #12e061;
+    border: 1px solid rgba(18, 224, 97, 0.45);
+
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+
+    backdrop-filter: blur(6px);
+    box-shadow: 0 0 12px rgba(18, 224, 97, 0.5);
+
+    z-index: 5;
+    animation: promotedFade 0.35s ease-out;
+}
+
+@keyframes promotedFade {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.event-card {
+    position: relative;
+}

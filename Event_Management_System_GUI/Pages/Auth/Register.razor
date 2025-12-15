@@ -1,5 +1,63 @@
-﻿<h3>Register</h3>
+﻿@page "/register"
+
+@inject AuthService Auth
+@inject UserService UserService
+@inject NavigationManager Nav
+
+<div class="register-container">
+    <div class="register-box">
+
+        <h2 class="register-title">Create Account</h2>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <p class="error-text">@errorMessage</p>
+        }
+
+        <input class="register-input"
+               placeholder="Username"
+               @bind="username" />
+
+        <input class="register-input"
+               placeholder="Email"
+               @bind="email" />
+
+        <input class="register-input"
+               type="password"
+               placeholder="Password"
+               @bind="password" />
+
+        <select class="register-input" @bind="selectedType">
+            <option value="Regular">Regular User</option>
+            <option value="Organizer">Organizer</option>
+        </select>
+
+        <button class="register-button" @onclick="HandleRegister">
+            Register
+        </button>
+
+    </div>
+</div>
 
 @code {
-    
+    private string username = "";
+    private string email = "";
+    private string password = "";
+    private string selectedType = "Regular";
+    private string errorMessage = "";
+
+    private async Task HandleRegister()
+    {
+        var result = await UserService.RegisterAsync(
+            username, email, password, selectedType);
+
+        if (!result.Success)
+        {
+            errorMessage = result.ErrorMessage;
+            return;
+        }
+
+        await Auth.LoginAsync(email, password);
+        Nav.NavigateTo("/");
+    }
 }

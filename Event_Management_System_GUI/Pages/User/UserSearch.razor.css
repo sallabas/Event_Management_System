@@ -1,0 +1,47 @@
+﻿.search-container {
+    max-width: 550px;
+    margin: 40px auto;
+    color: #eee;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 12px;
+    background: #2a2a2a;
+    border-radius: 10px;
+    border: 1px solid #3a3a3a;
+    color: #fff;
+    font-size: 16px;
+}
+
+.search-container input::placeholder {
+    color: #777;
+}
+
+.user-list {
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.user-item {
+    padding: 14px;
+    background: #1f1f1f;
+    border-bottom: 1px solid #2c2c2c;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.user-item:hover {
+    background: #262626;
+}
+
+.username {
+    font-weight: 600;
+    color: #fff;
+}
+
+.email {
+    font-size: 14px;
+    color: #aaa;
+}

@@ -39,8 +39,26 @@
     margin-top: 10px;
 }
 
+.btn-delete {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-delete:hover {
+    background-color: #c0392b;
+}
+
+
 .error {
     color: #ff5555;
     text-align: center;
     margin-bottom: 10px;
 }
+

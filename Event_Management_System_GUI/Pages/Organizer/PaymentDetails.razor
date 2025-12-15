@@ -1,5 +1,146 @@
-﻿<h3>PaymentDetails</h3>
+﻿@page "/organizer/payment"
+
+@using Event_Management_System.Models.Base
+@using Microsoft.EntityFrameworkCore
+@inject AuthService Auth
+@inject MasDbContext Db
+@inject NavigationManager Nav
+
+<div class="payment-container">
+
+    @if (currentUser == null)
+    {
+        <p class="error">You must be logged in.</p>
+        return;
+    }
+    
+
+    <h2 class="title">Payment Details</h2>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <p class="error">@errorMessage</p>
+    }
+    
+
+    @if (paymentDetail == null)
+    {
+        <div class="payment-box">
+            <h3>Add Payment Information</h3>
+
+            <input class="input" placeholder="Account Name"
+                   @bind="accountName" />
+
+            <input class="input" placeholder="IBAN"
+                   @bind="iban" />
+
+            <button class="btn-save" @onclick="CreatePaymentDetail">
+                Save Payment Details
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="payment-box">
+            <h3>Your Current Payment Info</h3>
+
+            <p><strong>Account Name:</strong> @paymentDetail.AccountName</p>
+            <p><strong>IBAN:</strong> @paymentDetail.IBAN</p>
+
+            <h3>Update Information</h3>
+
+            <input class="input" placeholder="New Account Name"
+                   @bind="accountName" />
+
+            <input class="input" placeholder="New IBAN"
+                   @bind="iban" />
+
+            <button class="btn-save" @onclick="UpdatePaymentDetail">
+                Update
+            </button>
+            <button class="btn-delete" @onclick="DeletePaymentDetail">
+                Delete Payment Details
+            </button>
+
+        </div>
+    }
+</div>
 
 @code {
+
+    private User? currentUser;
+    private PaymentDetail? paymentDetail;
+
+    private string accountName = "";
+    private string iban = "";
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await Auth.GetCurrentUserAsync();
+
+        if (currentUser != null)
+        {
+            paymentDetail = await Db.PaymentDetails
+                .FirstOrDefaultAsync(p => p.OwnerUserId == currentUser.UserId);
+        }
+    }
+
+    private async Task CreatePaymentDetail()
+    {
+        try
+        {
+            var newDetail = new PaymentDetail(currentUser!, accountName, iban);
+            Db.PaymentDetails.Add(newDetail);
+            await Db.SaveChangesAsync();
+            paymentDetail = newDetail;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task UpdatePaymentDetail()
+    {
+        try
+        {
+            if (paymentDetail == null) return;
+
+            paymentDetail.AccountName = accountName;
+            paymentDetail.IBAN = iban;
+
+            Db.PaymentDetails.Update(paymentDetail);
+            await Db.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+    
+    private async Task DeletePaymentDetail()
+    {
+        try
+        {
+            if (paymentDetail == null)
+                return;
+
+            Db.PaymentDetails.Remove(paymentDetail);
+            await Db.SaveChangesAsync();
+
+            paymentDetail = null;
+            accountName = "";
+            iban = "";
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    
     
 }

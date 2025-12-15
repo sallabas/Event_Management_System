@@ -1,0 +1,72 @@
+﻿.txn-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding-top: 40px;
+}
+
+h2.title {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 34px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+.txn-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(14px);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.35);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.txn-table thead {
+    background: linear-gradient(90deg, #4f4f4f, #6e6e6e, #4f4f4f);
+}
+
+.txn-table th {
+    padding: 15px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: #f8f8f8;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.txn-table td {
+    padding: 15px 20px;
+    color: #e4e4e4;
+    font-size: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.txn-table tr:hover td {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.amount-cell {
+    color: #4cff8f;
+    font-weight: 700;
+    text-shadow: 0 0 5px rgba(76, 255, 143, 0.6);
+}
+
+.empty-text {
+    text-align: center;
+    font-size: 20px;
+    margin-top: 40px;
+    opacity: 0.65;
+    letter-spacing: 0.5px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+

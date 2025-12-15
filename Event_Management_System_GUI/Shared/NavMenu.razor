@@ -1,4 +1,8 @@
-﻿<nav class="sidebar">
+﻿@inject AuthService Auth
+@inject AuthenticationStateProvider AuthProvider
+@implements IDisposable
+
+<nav class="sidebar">
     <ul class="nav-list">
         <li>
             <a href="/" class="nav-item">
@@ -11,23 +15,87 @@
                 <span class="nav-icon">📅</span> Events
             </a>
         </li>
-
         <li>
-            <a href="/my-enrollments" class="nav-item">
-                <span class="nav-icon">✔️</span> My Enrollments
+            <a href="/search" class="nav-item">
+                <span class="nav-icon">🔍</span> Search
             </a>
         </li>
 
-        <li>
-            <a href="/messages" class="nav-item">
-                <span class="nav-icon">✉️</span> Messages
-            </a>
-        </li>
+        @if (currentUser != null)
+        {
+            <!-- USERNAME -->
+            <li class="nav-user">👤 @currentUser.Username</li>
 
-        <li>
-            <a href="/profile" class="nav-item">
-                <span class="nav-icon">👤</span> Profile
-            </a>
-        </li>
+            <!-- ROLE-BASED NAVIGATION -->
+            @if (currentUser?.UserTypes == UserType.Organizer)
+            {
+                <li><a href="/organizer/events" class="nav-item"><span class="nav-icon">🗂️</span> My Events</a></li>
+                <li><a href="/organizer/create-event" class="nav-item"><span class="nav-icon">➕</span> Create Event</a></li>
+                <li><a href="/organizer/promotions" class="nav-item"><span class="nav-icon">📢</span> Promote Events</a></li> 
+                <li>
+                    <a href="/organizer/payment" class="nav-item">
+                        <span class="nav-icon">💳</span> Payment Details
+                    </a>
+                </li>
+                <li>
+                    <a href="/organizer/transactions" class="nav-item">
+                        <span class="nav-icon">📜</span> My Transactions
+                    </a>
+                </li>
+
+
+            }
+
+            <!-- PROFILE + LOGOUT -->
+            <li>
+                <a href="/messages" class="nav-item">
+                    <span class="nav-icon">💬</span> Messages
+                </a>
+            </li>
+            <li><a href="/profile" class="nav-item"><span class="nav-icon">⚙️</span> Profile</a></li>
+            <li><a href="/logout" class="nav-item"><span class="nav-icon">🚪</span> Logout</a></li>
+        }
+        else
+        {
+            <!-- VISITOR NAVIGATION -->
+            <li><a href="/login" class="nav-item"><span class="nav-icon">🔐</span> Login</a></li>
+            <li><a href="/register" class="nav-item"><span class="nav-icon">📝</span> Register</a></li>
+        }
     </ul>
 </nav>
+
+@code {
+    private User? currentUser;
+    private bool _loaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthProvider.AuthenticationStateChanged += OnAuthStateChanged;
+        await LoadUser();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadUser();
+            StateHasChanged();
+        }
+    }
+
+    private async void OnAuthStateChanged(Task<AuthenticationState> task)
+    {
+        await LoadUser();
+        StateHasChanged();
+    }
+
+    private async Task LoadUser()
+    {
+        currentUser = await Auth.GetCurrentUserAsync();
+    }
+
+    public void Dispose()
+    {
+        AuthProvider.AuthenticationStateChanged -= OnAuthStateChanged;
+    }
+}

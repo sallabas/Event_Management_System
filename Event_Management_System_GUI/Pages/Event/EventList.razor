@@ -18,6 +18,12 @@ else
         @foreach (var ev in Events)
         {
             <div class="event-card" @onclick="() => NavigateToDetails(ev.EventId)">
+
+                @if (ev.PromotedRequests.Any(pr => pr.Status == PromotionStatus.Confirmed))
+                {
+                    <div class="promoted-badge">⭐ Promoted</div>
+                }
+                
                 @* Photos fetched randomly by picsum, you need to change it later *@
                 <img class="event-image" src="https://picsum.photos/400/250?random=@ev.EventId"/>
 
@@ -47,7 +53,7 @@ else
                             <i class="fa-solid fa-users"></i>
                             @ev.Enrollments.Count participants
                         </span>
-                        
+
                         <span class="join-status not-joined">Details</span>
                     </div>
                 </div>
@@ -61,7 +67,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Events = await EventService.GetAllEvents();
+        // Events = await EventService.GetAllEvents();
+        Events = await EventService.GetAllEventsRankedAsync();
     }
 
     void NavigateToDetails(int eventId)
@@ -70,84 +77,3 @@ else
     }
 }
 
-
-@*
-@page "/events"
-@using Event_Management_System.Models.Base
-@using Event_Management_System.Data
-@using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<MasDbContext> DbFactory
-@inject NavigationManager Nav
-
-<div class="container mt-4">
-    <div class="text-center mb-4">
-        <h2> Browse Events</h2>
-        <input type="text" class="form-control mt-3 w-50 mx-auto" placeholder="🔍 Search events..." />
-    </div>
-
-    <div class="row">
-        @if (_events is null)
-        {
-            <p class="text-center">Loading...</p>
-        }
-        else if (_events.Count == 0)
-        {
-            <p class="text-center">No events found.</p>
-        }
-        else
-        {
-            @foreach (var ev in _events)
-            {
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100 border-0 hover-shadow" style="cursor: pointer;" @onclick="@(() => Nav.NavigateTo($"/events/{ev.EventId}"))">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold">@ev.EventTitle</h5>
-                            <p class="card-text text-muted">@ev.Description</p>
-                        </div>
-                        <div class="card-footer bg-light text-muted d-flex align-items-center">
-                            <i class="bi bi-calendar-event me-2"></i>
-                            @ev.StartDate.ToShortDateString() - @ev.EndDate.ToShortDateString()
-                        </div>
-                    </div>
-                </div>
-            }
-        }
-    </div>
-</div>
-
-<style>
-    .hover-shadow:hover {
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        transition: box-shadow 0.3s ease-in-out;
-    }
-
-    .card-title {
-        font-size: 1.25rem;
-        color: #333;
-    }
-
-    .card-text {
-        font-size: 0.95rem;
-    }
-
-    input[type="text"] {
-        max-width: 400px;
-    }
-</style>
-
-@code {
-    private List<Event>? _events;
-
-    protected override async Task OnInitializedAsync()
-    {
-        using var db = await DbFactory.CreateDbContextAsync();
-
-        _events = await db.Events
-                          .Include(e => e.Venue)
-                              .ThenInclude(v => v.Location)
-                          .Include(e => e.Organizer)
-                          .OrderBy(e => e.StartDate)
-                          .ToListAsync();
-    }
-}
-*@

@@ -1,0 +1,152 @@
+﻿.profile-wrapper {
+    display: flex;
+    justify-content: center;
+    padding-top: 50px;
+}
+
+.profile-card {
+    background: #1f1f1f;
+    padding: 30px 40px;
+    border-radius: 16px;
+    border: 1px solid #2b2b2b;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    color: #fff;
+    text-align: center;
+    width: 360px;
+}
+
+.avatar {
+    font-size: 70px;
+    margin-bottom: 15px;
+}
+
+.username {
+    margin: 0;
+    font-size: 26px;
+}
+
+.age {
+    margin-top: 4px;
+    font-size: 15px;
+    color: #b5b5b5;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.stat-number {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #aaa;
+}
+
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+.follow-btn {
+    background: #2ecc71;
+    color: white;
+}
+
+.unfollow-btn {
+    background: #e74c3c;
+    color: white;
+}
+
+.message-btn {
+    background: #3498db;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.loading, .not-found {
+    color: #bbb;
+    text-align: center;
+    padding-top: 50px;
+}
+
+
+/*
+.profile-card {
+    margin: 30px auto;
+    padding: 20px 25px;
+    width: 380px;
+    background: #1e1e1e;
+    border-radius: 14px;
+    border: 1px solid #2a2a2a;
+    box-shadow: 0 0 12px rgba(0,0,0,0.35);
+    color: #eee;
+    text-align: center;
+}
+
+.profile-card h2 {
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+.profile-card p {
+    margin: 6px 0;
+    font-size: 15px;
+    color: #b5b5b5;
+}
+
+.profile-actions {
+    margin-top: 22px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+button {
+    border: none;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+.btn-follow {
+    background-color: #2ecc71;
+    color: #fff;
+}
+
+.btn-unfollow {
+    background-color: #e74c3c;
+    color: #fff;
+}
+
+.btn-message {
+    background-color: #3498db;
+    color: #fff;
+}
+
+button:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+*/

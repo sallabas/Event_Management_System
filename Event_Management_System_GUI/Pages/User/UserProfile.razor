@@ -1,5 +1,113 @@
-﻿<h3>UserProfile</h3>
+﻿@page "/user/{id:int}"
+
+@inject UserService Users
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<div class="profile-wrapper">
+    @if (loading)
+    {
+        <p class="loading">Loading profile...</p>
+    }
+    else if (targetUser == null)
+    {
+        <p class="not-found">User not found.</p>
+    }
+    else
+    {
+        <div class="profile-card">
+
+            <div class="avatar">👤</div>
+
+            <h2 class="username">@targetUser.Username</h2>
+
+            <p class="age">Age: @CalculateAge(targetUser.DateOfBirth)</p>
+
+            <div class="stats">
+                <div>
+                    <span class="stat-number">@targetUser.FollowersCount</span>
+                    <span class="stat-label">Followers</span>
+                </div>
+                <div>
+                    <span class="stat-number">@targetUser.FollowingCount</span>
+                    <span class="stat-label">Following</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            @if (currentUser != null && currentUser.UserId != targetUser.UserId)
+            {
+                <div class="actions">
+
+                    @if (isFollowing)
+                    {
+                        <button class="btn unfollow-btn" @onclick="UnfollowUser">Unfollow</button>
+                    }
+                    else
+                    {
+                        <button class="btn follow-btn" @onclick="FollowUser">Follow</button>
+                    }
+
+                    <button class="btn message-btn" @onclick="OpenChat">
+                        💬 Message
+                    </button>
+                </div>
+            }
+        </div>
+    }
+</div>
 
 @code {
-    
+    [Parameter] public int id { get; set; }
+
+    private User? currentUser;
+    private User? targetUser;
+
+    private bool loading = true;
+    private bool isFollowing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+
+        currentUser = await Auth.GetCurrentUserAsync();
+        targetUser = await Users.GetUserByIdAsync(id);
+
+        if (currentUser != null && targetUser != null)
+        {
+            isFollowing = targetUser.Followers.Any(f => f.UserId == currentUser.UserId);
+        }
+
+        loading = false;
+    }
+
+    private async Task FollowUser()
+    {
+        await Users.FollowAsync(currentUser.UserId, targetUser.UserId);
+        isFollowing = true;
+        targetUser = await Users.GetUserByIdAsync(targetUser.UserId);
+        StateHasChanged();
+    }
+
+    private async Task UnfollowUser()
+    {
+        await Users.UnfollowAsync(currentUser.UserId, targetUser.UserId);
+        isFollowing = false;
+        targetUser = await Users.GetUserByIdAsync(targetUser.UserId);
+        StateHasChanged();
+    }
+
+    private void OpenChat()
+    {
+        Nav.NavigateTo($"/messages/chat/{id}");
+    }
+
+    private int CalculateAge(DateTime dob)
+    {
+        var today = DateTime.Today;
+        var age = today.Year - dob.Year;
+        if (dob.Date > today.AddYears(-age)) age--;
+        return age;
+    }
 }
+
