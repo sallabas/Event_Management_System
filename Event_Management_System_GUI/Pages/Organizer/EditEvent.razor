@@ -1,0 +1,187 @@
+﻿@page "/organizer/events/edit/{EventId:int}"
+@using Event_Management_System.Models.Base
+@using Microsoft.EntityFrameworkCore
+
+@inject AuthService Auth
+@inject EventService EventService
+@inject MasDbContext Db
+@inject NavigationManager Nav
+
+<div class="create-container">
+
+    @if (loading)
+    {
+        <p>Loading event...</p>
+    }
+    else if (errorMessage != "")
+    {
+        <p class="error">@errorMessage</p>
+        <button class="btn" @onclick="GoBack">Back</button>
+    }
+    else
+    {
+        <div class="create-box">
+            <h2 class="title">Edit Event</h2>
+
+            <input class="input" @bind="title" placeholder="Event Title" />
+            <textarea class="textarea" @bind="description" placeholder="Description"></textarea>
+
+            <label class="label">Start Date</label>
+            <input class="input" type="datetime-local" @bind="startDate" />
+
+            <label class="label">End Date</label>
+            <input class="input" type="datetime-local" @bind="endDate" />
+
+            <label class="label">Available Spots</label>
+            <input class="input" type="number" @bind="availableSpots" min="1" />
+
+            <label class="label">Venue</label>
+            <select class="input" @bind="selectedVenueId">
+                @foreach (var v in venues)
+                {
+                    <option value="@v.VenueId">
+                        @v.VenueName (@v.Location.City, @v.Location.Country)
+                    </option>
+                }
+            </select>
+
+            <label class="label">Categories</label>
+            <select class="input multi" multiple @onchange="OnCategoryChange">
+                @foreach (var c in categories)
+                {
+                    <option value="@c.EventCategoryId"
+                            selected="@selectedCategoryIds.Contains(c.EventCategoryId.ToString())">
+                        @c.CategoryName
+                    </option>
+                }
+            </select>
+
+            <button class="btn create-btn" @onclick="HandleUpdateEvent">
+                Save Changes
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int EventId { get; set; }
+
+    private User? currentUser;
+    private Event? ev;
+
+    private bool loading = true;
+    private string errorMessage = "";
+
+    private string title = "";
+    private string description = "";
+    private DateTime startDate;
+    private DateTime endDate;
+    private int availableSpots;
+
+    private List<Venue> venues = new();
+    private List<EventCategory> categories = new();
+
+    private string selectedVenueId = "";
+    private List<string> selectedCategoryIds = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await Auth.GetCurrentUserAsync();
+
+        if (currentUser == null || currentUser.UserTypes != UserType.Organizer)
+        {
+            errorMessage = "Unauthorized.";
+            loading = false;
+            return;
+        }
+
+        ev = await Db.Events
+            .Include(e => e.Venue)
+            .Include(e => e.Categories)
+            .FirstOrDefaultAsync(e => e.EventId == EventId);
+
+        if (ev == null)
+        {
+            errorMessage = "Event not found.";
+            loading = false;
+            return;
+        }
+
+        if (DateTime.Now >= ev.StartDate)
+        {
+            errorMessage = "This event has already started and cannot be edited.";
+            loading = false;
+            return;
+        }
+
+        if (ev.OrganizerId != currentUser.UserId)
+        {
+            errorMessage = "You are not allowed to edit this event.";
+            loading = false;
+            return;
+        }
+
+        venues = await Db.Venues.Include(v => v.Location).ToListAsync();
+        categories = await Db.EventCategories.ToListAsync();
+
+        title = ev.EventTitle;
+        description = ev.Description;
+        startDate = ev.StartDate;
+        endDate = ev.EndDate;
+        availableSpots = ev.AvailableSpots;
+
+        selectedVenueId = ev.VenueId.ToString();
+        selectedCategoryIds = ev.Categories
+            .Select(c => c.EventCategoryId.ToString())
+            .ToList();
+
+        loading = false;
+    }
+
+    private async Task HandleUpdateEvent()
+    {
+        if (ev == null)
+            return;
+
+        if (endDate <= startDate)
+        {
+            errorMessage = "End date must be after start date.";
+            return;
+        }
+
+        if (!int.TryParse(selectedVenueId, out int venueId))
+        {
+            errorMessage = "Invalid venue.";
+            return;
+        }
+
+        var venue = await Db.Venues.FindAsync(venueId);
+        var selectedCats = await Db.EventCategories
+            .Where(c => selectedCategoryIds.Contains(c.EventCategoryId.ToString()))
+            .ToListAsync();
+
+        ev.EventTitle = title;
+        ev.Description = description;
+        ev.StartDate = startDate;
+        ev.EndDate = endDate;
+        ev.AvailableSpots = availableSpots;
+        ev.Venue = venue!;
+        ev.Categories = selectedCats;
+
+        await EventService.UpdateEvent(ev);
+
+        Nav.NavigateTo("/organizer/events");
+    }
+
+    private void OnCategoryChange(ChangeEventArgs e)
+    {
+        selectedCategoryIds.Clear();
+
+        if (e.Value != null)
+        {
+            selectedCategoryIds = e.Value.ToString()!.Split(',').ToList();
+        }
+    }
+
+    private void GoBack() => Nav.NavigateTo("/organizer/events");
+}

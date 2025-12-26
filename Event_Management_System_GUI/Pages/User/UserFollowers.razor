@@ -1,0 +1,46 @@
+﻿@page "/user/{id:int}/followers"
+@inject UserService Users
+@inject NavigationManager Nav
+
+<h3>Followers</h3>
+
+@if (users == null)
+{
+    <p>Loading...</p>
+}
+else if (!users.Any())
+{
+    <p>No followers.</p>
+}
+else
+{
+    <ul class="user-list">
+        @foreach (var user in users)
+        {
+            <li @onclick="() => GoToProfile(user.UserId)">
+                <img src="@GetAvatar(user)" class="avatar-small" />
+                <span>@user.Username</span>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private List<User>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await Users.GetFollowersAsync(id);
+    }
+
+    private void GoToProfile(int userId)
+    {
+        Nav.NavigateTo($"/user/{userId}");
+    }
+
+    private string GetAvatar(User user)
+        => string.IsNullOrWhiteSpace(user.ProfileImagePath)
+            ? "/images/default_avatar.png"
+            : user.ProfileImagePath;
+}

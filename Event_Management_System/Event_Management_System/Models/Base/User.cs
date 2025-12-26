@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Serialization;
 
 namespace Event_Management_System.Models.Base
 {
@@ -14,6 +15,9 @@ namespace Event_Management_System.Models.Base
         private string _email = null!;
         private string _password = null!;
         private DateTime _dateOfBirth;
+        
+        // GUI update 12.16.25
+        public string? ProfileImagePath { get; set; }
 
 
         public string Username
@@ -64,15 +68,18 @@ namespace Event_Management_System.Models.Base
         
         public PaymentDetail? PaymentDetail { get; set; }
         
+        [JsonIgnore]
         public ICollection<Message> MessagesReceived { get; set; } = new List<Message>();
+        [JsonIgnore]
         public ICollection<Message> MessagesSent { get; set; } = new List<Message>();
 
 
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         public ICollection<DiscussionComment> Comments { get; set; } = new List<DiscussionComment>();
 
-
+        [JsonIgnore]
         public ICollection<User> Followers { get; set; } = new HashSet<User>();
+        [JsonIgnore]
         public ICollection<User> Following { get; set; } = new HashSet<User>();
   
         public int FollowersCount => Followers.Count;

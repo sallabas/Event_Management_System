@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Event_Management_System.Data;
 
 namespace Event_Management_System.Data
 {
@@ -8,7 +9,9 @@ namespace Event_Management_System.Data
         public MasDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<MasDbContext>();
-            optionsBuilder.UseSqlite("Data Source=mas.db");
+
+            var dbPath = DbPathProvider.GetDbPath();
+            optionsBuilder.UseSqlite($"Data Source={dbPath}");
 
             return new MasDbContext(optionsBuilder.Options);
         }

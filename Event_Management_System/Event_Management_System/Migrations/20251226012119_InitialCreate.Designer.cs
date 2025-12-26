@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Event_Management_System.Migrations
 {
     [DbContext(typeof(MasDbContext))]
-    [Migration("20251114120358_FixPaymentDetailOptional")]
-    partial class FixPaymentDetailOptional
+    [Migration("20251226012119_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,6 +28,9 @@ namespace Event_Management_System.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("TargetEventId")
@@ -230,6 +233,9 @@ namespace Event_Management_System.Migrations
                     b.Property<int>("OrganizerId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime>("PromotionEndDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("RequestDate")
                         .HasColumnType("TEXT");
 
@@ -287,6 +293,9 @@ namespace Event_Management_System.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProfileImagePath")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserType")

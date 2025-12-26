@@ -292,6 +292,9 @@ namespace Event_Management_System.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ProfileImagePath")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("UserType")
                         .IsRequired()
                         .HasMaxLength(13)

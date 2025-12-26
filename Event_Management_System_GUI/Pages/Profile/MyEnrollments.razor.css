@@ -1,0 +1,46 @@
+﻿.title {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.enrollment-list {
+    max-width: 800px;
+    margin: auto;
+}
+
+.enrollment-card {
+    background: #1f1f1f;
+    border: 1px solid #2b2b2b;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.event-desc {
+    color: #b3b3b3;
+    font-size: 14px;
+}
+
+.btn {
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.view-btn {
+    background: #3498db;
+    color: white;
+}
+
+.back-btn {
+    display: block;
+    margin: 30px auto 0;
+    background: #555;
+    color: white;
+}

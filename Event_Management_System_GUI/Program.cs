@@ -15,6 +15,7 @@ builder.Services.AddServerSideBlazor();
 // var solutionRoot = Path.GetFullPath(Path.Combine(basePath, @"../../"));
 // var dbPath = Path.Combine(solutionRoot, "Event_Management_System", "mas.db");
 
+/*
 var dbPath = Path.Combine(
     builder.Environment.ContentRootPath, 
     "..",                                 
@@ -23,11 +24,16 @@ var dbPath = Path.Combine(
 );
 
 Console.WriteLine("DB PATH (GUI) => " + dbPath);
+*/
 
 // builder.Services.AddDbContext<MasDbContext>();
 
+var dbPath = DbPathProvider.GetDbPath();
+Console.WriteLine("DB PATH (GUI) => " + dbPath);
+
 builder.Services.AddDbContext<MasDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+    options.UseSqlite($"Data Source={dbPath}")
+);
 
 builder.Services.AddScoped(sp => new HttpClient
 {

@@ -25,10 +25,35 @@ else
                 <div class="msg-row @(msg.SenderId == currentUser.UserId ? "sent" : "received")">
                     <div class="msg-bubble">
                         @msg.Content
+
+                        <div class="msg-meta">
+        <span class="msg-time">
+            @msg.SentDate.ToString("HH:mm")
+        </span>
+
+                            @* SADECE BENİM GÖNDERDİĞİM MESAJLAR *@
+                            @if (msg.SenderId == currentUser.UserId)
+                            {
+                                <span class="msg-status">
+                @if (msg.IsRead)
+                                    {
+                                        <span class="read">✓✓</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="sent">✓</span>
+                                    }
+            </span>
+                            }
+                        </div>
+                    </div>
+
+                    @*<div class="msg-bubble">
+                        @msg.Content
                         <div class="msg-time">
                             @msg.SentDate.ToString("HH:mm")
                         </div>
-                    </div>
+                    </div>*@
                 </div>
             }
         }
@@ -79,6 +104,16 @@ else
     private async Task LoadMessages()
     {
         messages = await MessageService.GetChatAsync(currentUser.UserId, otherUserId);
+        
+        if (messages.Any(m =>
+                m.ReceiverId == currentUser.UserId &&
+                !m.IsRead))
+        {
+            await MessageService.MarkMessagesAsReadAsync(
+                senderId: otherUserId,
+                receiverId: currentUser.UserId
+            );
+        }
         await ScrollToBottom();
     }
 

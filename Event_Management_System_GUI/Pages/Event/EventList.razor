@@ -1,9 +1,63 @@
 ﻿@page "/events"
+@using Microsoft.EntityFrameworkCore
+
 @inject EventService EventService
 @inject NavigationManager Navigation
+@inject MasDbContext Db
 
-<h2 class="page-title">Upcoming Events</h2>
+<h2 class="page-title">Events</h2>
 
+<div class="filter-header">
+    <button class="filter-toggle" @onclick="ToggleFilters">
+        <span>Filters</span>
+        <span class="arrow @(filtersOpen ? "open" : "")">▾</span>
+    </button>
+</div>
+
+
+    @if (filtersOpen)
+    {
+        <div class="filter-bar dropdown">
+            <select class="input" @bind="selectedCategoryId">
+                <option disabled selected value="">Select category</option>
+                @foreach (var cat in categories)
+                {
+                    <option value="@cat.EventCategoryId">@cat.CategoryName</option>
+                }
+            </select>
+
+            <input type="date" class="input" @bind="filterStartDate" />
+            <input type="date" class="input" @bind="filterEndDate" />
+
+            <button class="btn secondary" @onclick="ShowUpcoming">
+                Upcoming Events
+            </button>
+
+            <button class="btn secondary" @onclick="ClearFilters">
+                Clear Filters
+            </button>
+            
+            <button class="btn apply" @onclick="ApplyFilters">
+                Apply Filters
+            </button>
+        </div>
+    }
+
+    @*
+    <button class="btn apply" @onclick="ApplyFilters">
+        Apply Filters
+    </button>
+
+    <button class="btn secondary" @onclick="ShowUpcoming">
+        Upcoming Events
+    </button>
+
+    <button class="btn secondary" @onclick="ClearFilters">
+        Clear Filters
+    </button>
+    *@
+    
+<!-- EVENT LIST -->
 @if (Events == null)
 {
     <p>Loading events...</p>
@@ -23,18 +77,23 @@ else
                 {
                     <div class="promoted-badge">⭐ Promoted</div>
                 }
-                
-                @* Photos fetched randomly by picsum, you need to change it later *@
-                <img class="event-image" src="https://picsum.photos/400/250?random=@ev.EventId"/>
+
+                <img class="event-image"
+                     src="https://picsum.photos/400/250?random=@ev.EventId" />
 
                 <div class="event-content">
-
                     <h3>@ev.EventTitle</h3>
 
-                    <p class="event-date">
-                        <i class="fa-solid fa-calendar-day"></i>
-                        @ev.StartDate.ToString("dd MMM yyyy - HH:mm")
-                    </p>
+                    <div class="event-date">
+                        <div>
+                            <i class="fa-solid fa-play"></i>
+                            Start: @ev.StartDate.ToString("dd MMM yyyy - HH:mm")
+                        </div>
+                        <div>
+                            <i class="fa-solid fa-flag-checkered"></i>
+                            End: @ev.EndDate.ToString("dd MMM yyyy - HH:mm")
+                        </div>
+                    </div>
 
                     <p class="event-location">
                         <i class="fa-solid fa-location-dot"></i>
@@ -64,16 +123,72 @@ else
 
 @code {
     private List<Event> Events;
+    private List<EventCategory> categories = new();
+
+    private int? selectedCategoryId = null;
+    private DateTime? filterStartDate;
+    private DateTime? filterEndDate;
+    
+    private bool filtersOpen = false;
 
     protected override async Task OnInitializedAsync()
     {
-        // Events = await EventService.GetAllEvents();
+        categories = await Db.EventCategories.ToListAsync();
         Events = await EventService.GetAllEventsRankedAsync();
     }
 
-    void NavigateToDetails(int eventId)
+    private void NavigateToDetails(int eventId)
     {
         Navigation.NavigateTo($"/events/{eventId}");
     }
-}
 
+    private async Task ApplyFilters()
+    {
+        if (selectedCategoryId == null &&
+            filterStartDate == null &&
+            filterEndDate == null)
+        {
+            Events = await EventService.GetAllEventsRankedAsync();
+            StateHasChanged();
+            return;
+        }
+
+        Events = await EventService.GetFilteredEventsAsync(
+            selectedCategoryId,
+            filterStartDate,
+            filterEndDate
+        );
+
+        StateHasChanged();
+    }
+
+    private async Task ClearFilters()
+    {
+        selectedCategoryId = null;
+        filterStartDate = null;
+        filterEndDate = null;
+
+        Events = await EventService.GetAllEventsRankedAsync();
+        StateHasChanged();
+    }
+
+
+    private async Task ShowUpcoming()
+    {
+        filterStartDate = DateTime.Today;
+        filterEndDate = null;
+
+        Events = await EventService.GetFilteredEventsAsync(
+            selectedCategoryId,
+            filterStartDate,
+            filterEndDate
+        );
+
+        StateHasChanged();
+    }
+    
+    private void ToggleFilters()
+    {
+        filtersOpen = !filtersOpen;
+    }
+}

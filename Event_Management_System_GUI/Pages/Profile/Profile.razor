@@ -1,5 +1,258 @@
 ﻿@page "/profile"
+
+@using Event_Management_System.Models.Base
+@using Microsoft.AspNetCore.Components.Forms
 @inject AuthService Auth
+@inject UserService UserService
+@inject NavigationManager Nav
+
+<div class="profile-wrapper">
+    @if (user == null)
+    {
+        <p class="not-logged">You must be logged in to view this page.</p>
+        <button class="btn login-btn" @onclick="GoLogin">Go to Login</button>
+    }
+    else
+    {
+        <div class="profile-card">
+
+            <div class="avatar-container">
+                <img src="@GetProfileImage()" class="avatar-img" alt="Profile image" />
+            </div>
+
+            <h2 class="username">@user.Username</h2>
+            <p class="age">Age: @CalculateAge(user.DateOfBirth)</p>
+
+            <!-- EMAIL -->
+            <div class="info-row">
+                <span class="label">Email:</span>
+                @if (!isEditMode)
+                {
+                    <span class="value">@user.Email</span>
+                }
+                else
+                {
+                    <input class="edit-input" @bind="_editEmail" />
+                }
+            </div>
+
+            <!-- ACCOUNT TYPE -->
+            <div class="info-row">
+                <span class="label">Account Type:</span>
+                <span class="value">@user.UserTypes</span>
+            </div>
+
+            @if (isEditMode)
+            {
+                @* REGULAR USER → ADDRESS *@
+                @if (user is RegularUser)
+                {
+                    <div class="info-row">
+                        <span class="label">Address:</span>
+                        <input class="edit-input" @bind="_editAddress" />
+                    </div>
+                }
+
+                @* ORGANIZER → BUSINESS DESCRIPTION *@
+                @if (user is Organizer)
+                {
+                    <div class="info-row">
+                        <span class="label">Business Description:</span>
+                        <input class="edit-input" @bind="_editBusinessDescription" />
+                    </div>
+                }
+
+                <!-- PASSWORD -->
+                <div class="info-row">
+                    <span class="label">Current Password:</span>
+                    <input type="password" class="edit-input" @bind="_currentPassword" />
+                </div>
+
+                <div class="info-row">
+                    <span class="label">New Password:</span>
+                    <input type="password" class="edit-input" @bind="_newPassword" />
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Confirm Password:</span>
+                    <input type="password" class="edit-input" @bind="_confirmPassword" />
+                </div>
+
+                <!-- PROFILE IMAGE -->
+                <div class="info-row">
+                    <span class="label">Profile Picture:</span>
+                    <InputFile OnChange="OnProfileImageSelected" accept="image/*" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <p class="error-text">@_errorMessage</p>
+                }
+            }
+
+            <!-- STATS -->
+            <div class="stats">
+                <div>
+                    <span class="stat-number">@user.FollowersCount</span>
+                    <span class="stat-label">Followers</span>
+                </div>
+                <div>
+                    <span class="stat-number">@user.FollowingCount</span>
+                    <span class="stat-label">Following</span>
+                </div>
+            </div>
+
+            <!-- ACTIONS -->
+            @if (!isEditMode)
+            {
+                <button class="btn edit-btn" @onclick="EnableEdit">Edit Profile</button>
+                <button class="btn enrollments-btn" @onclick="GoEnrollments">Enrollments</button>
+                <button class="btn logout-btn" @onclick="Logout">Logout</button>
+            }
+            else
+            {
+                <button class="btn save-btn" @onclick="SaveProfile">Save</button>
+                <button class="btn cancel-btn" @onclick="CancelEdit">Cancel</button>
+            }
+
+        </div>
+    }
+</div>
+
+@code {
+    private User? user;
+    private bool isEditMode;
+
+    private string? _editEmail;
+    private string? _editAddress;
+    private string? _editBusinessDescription;
+
+    private string? _currentPassword;
+    private string? _newPassword;
+    private string? _confirmPassword;
+
+    private string? _errorMessage;
+    private IBrowserFile? _selectedProfileImage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await Auth.GetCurrentUserAsync();
+    }
+
+    private void EnableEdit()
+    {
+        if (user == null) return;
+
+        _editEmail = user.Email;
+
+        if (user is RegularUser ru)
+            _editAddress = ru.Address;
+
+        if (user is Organizer org)
+            _editBusinessDescription = org.BusinessDescription;
+
+        _currentPassword = "";
+        _newPassword = "";
+        _confirmPassword = "";
+        _errorMessage = null;
+
+        isEditMode = true;
+    }
+
+    private async Task SaveProfile()
+    {
+        _errorMessage = null;
+
+        if (user == null || _editEmail == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(_newPassword) &&
+            _newPassword != _confirmPassword)
+        {
+            _errorMessage = "New passwords do not match.";
+            return;
+        }
+
+        var success = await UserService.UpdateProfileExtendedAsync(
+            user.UserId,
+            _editEmail,
+
+            // Address → sadece RegularUser
+            user.UserTypes == UserType.Regular
+                ? _editAddress
+                : null,
+
+            // BusinessDescription → sadece Organizer
+            user.UserTypes == UserType.Organizer
+                ? _editBusinessDescription
+                : null,
+
+            _currentPassword,
+            _newPassword
+        );
+
+        if (!success)
+        {
+            _errorMessage = "Current password is incorrect.";
+            return;
+        }
+
+        if (_selectedProfileImage != null)
+        {
+            var path = await UserService.UpdateProfileImageAsync(
+                user.UserId,
+                _selectedProfileImage);
+
+            if (path != null)
+                user.ProfileImagePath = path;
+        }
+
+        user.Email = _editEmail;
+        isEditMode = false;
+    }
+
+    private void CancelEdit()
+    {
+        isEditMode = false;
+        _selectedProfileImage = null;
+    }
+
+    private void OnProfileImageSelected(InputFileChangeEventArgs e)
+        => _selectedProfileImage = e.File;
+
+    private string GetProfileImage()
+        => string.IsNullOrWhiteSpace(user?.ProfileImagePath)
+            ? "/images/default_avatar.png"
+            : user.ProfileImagePath;
+
+    private async Task Logout()
+    {
+        await Auth.LogoutAsync();
+        Nav.NavigateTo("/");
+    }
+
+    private void GoEnrollments()
+        => Nav.NavigateTo("/profile/enrollments");
+
+    private void GoLogin()
+        => Nav.NavigateTo("/login");
+
+    private int CalculateAge(DateTime dob)
+    {
+        var age = DateTime.Today.Year - dob.Year;
+        if (dob.Date > DateTime.Today.AddYears(-age)) age--;
+        return age;
+    }
+}
+
+
+@*
+@page "/profile"
+
+@using Event_Management_System.Models.Base
+@using Microsoft.AspNetCore.Components.Forms
+@inject AuthService Auth
+@inject UserService UserService
 @inject NavigationManager Nav
 
 <div class="profile-wrapper">
@@ -15,22 +268,97 @@
     {
         <div class="profile-card">
 
+            <div class="avatar-container">
+                <img src="@GetProfileImage()" class="avatar-img" />
+            </div>
+
+            $1$
+            <!-- Avatar -->
             <div class="avatar">👤</div>
+            #1#
+            
 
             <h2 class="username">@user.Username</h2>
 
             <p class="age">Age: @CalculateAge(user.DateOfBirth)</p>
 
+            <!-- EMAIL -->
             <div class="info-row">
                 <span class="label">Email:</span>
-                <span class="value">@user.Email</span>
+
+                @if (!isEditMode)
+                {
+                    <span class="value">@user.Email</span>
+                }
+                else
+                {
+                    <input class="edit-input"
+                           @bind="editEmail" />
+                }
             </div>
 
+            <!-- ACCOUNT TYPE -->
             <div class="info-row">
                 <span class="label">Account Type:</span>
                 <span class="value">@user.UserTypes.ToString()</span>
             </div>
 
+            @if (isEditMode)
+            {
+                <div class="info-row">
+                    <span class="label">Current Password:</span>
+                    <input type="password"
+                           class="edit-input"
+                           @bind="currentPassword"
+                           placeholder="Enter current password" />
+                </div>
+
+                <div class="info-row">
+                    <span class="label">New Password:</span>
+                    <input type="password"
+                           class="edit-input"
+                           @bind="newPassword"
+                           placeholder="New password" />
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Confirm Password:</span>
+                    <input type="password"
+                           class="edit-input"
+                           @bind="confirmPassword"
+                           placeholder="Confirm new password" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <p class="error-text">@errorMessage</p>
+                }
+                
+                <div class="info-row">
+                    <span class="label">Profile Picture:</span>
+
+                    <InputFile OnChange="OnProfileImageSelected"
+                               accept="image/*" />
+                </div>
+
+            }
+
+
+            $1$
+            <!-- PASSWORD (EDIT MODE ONLY) -->
+            @if (isEditMode)
+            {
+                <div class="info-row">
+                    <span class="label">New Password:</span>
+                    <input type="password"
+                           class="edit-input"
+                           @bind="newPassword"
+                           placeholder="Leave empty to keep current" />
+                </div>
+            }
+            #1#
+
+            <!-- STATS -->
             <div class="stats">
                 <div>
                     <span class="stat-number">@user.FollowersCount</span>
@@ -42,16 +370,76 @@
                 </div>
             </div>
 
-            <!-- Logout -->
-            <button class="btn logout-btn" @onclick="Logout">
-                Logout
-            </button>
+            <!-- ACTION BUTTONS -->
+            @if (!isEditMode)
+            {
+                <button class="btn edit-btn" @onclick="EnableEdit">
+                    Edit Profile
+                </button>
+
+                <button class="btn enrollments-btn" @onclick="GoEnrollments">
+                    Enrollments
+                </button>
+
+                <button class="btn logout-btn" @onclick="Logout">
+                    Logout
+                </button>
+            }
+            else
+            {
+                <button class="btn save-btn" @onclick="SaveProfile">
+                    Save
+                </button>
+
+                <button class="btn cancel-btn" @onclick="CancelEdit">
+                    Cancel
+                </button>
+            }
+
         </div>
     }
 </div>
 
 @code {
     private User? user;
+
+    private bool isEditMode = false;
+    private string? editEmail;
+    private string? newPassword;
+    private string? currentPassword;
+    private string? confirmPassword;
+    private string? errorMessage;
+    private IBrowserFile? selectedProfileImage;
+    
+
+    
+    private void OnProfileImageSelected(InputFileChangeEventArgs e)
+    {
+        selectedProfileImage = e.File;
+    }
+
+    private string GetProfileImage()
+    {
+        if (user == null || string.IsNullOrWhiteSpace(user.ProfileImagePath))
+            return "/images/default_avatar.png";
+
+        return user.ProfileImagePath;
+    }
+
+    private async Task UploadProfileImage(InputFileChangeEventArgs e)
+    {
+        if (user == null) return;
+
+        var file = e.File;
+
+        var path = await UserService.UpdateProfileImageAsync(user.UserId, file);
+
+        if (path != null)
+        {
+            user.ProfileImagePath = path;
+            StateHasChanged();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,6 +457,116 @@
         Nav.NavigateTo("/");
     }
 
+    private void GoEnrollments()
+    {
+        Nav.NavigateTo("/profile/enrollments");
+    }
+
+    private void EnableEdit()
+    {
+        if (user == null) return;
+
+        editEmail = user.Email;
+        currentPassword = "";
+        newPassword = "";
+        confirmPassword = "";
+        errorMessage = null;
+
+        isEditMode = true;
+    }
+
+    /*
+    private void EnableEdit()
+    {
+        if (user == null) return;
+
+        editEmail = user.Email;
+        newPassword = "";
+        isEditMode = true;
+    }
+    */
+
+    private async Task SaveProfile()
+    {
+        errorMessage = null;
+
+        if (user == null || editEmail == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(newPassword))
+        {
+            if (newPassword != confirmPassword)
+            {
+                errorMessage = "New passwords do not match.";
+                return;
+            }
+        }
+
+        var success = await UserService.UpdateProfileAsync(
+            user.UserId,
+            editEmail,
+            currentPassword,
+            newPassword);
+
+        if (!success)
+        {
+            errorMessage = "Current password is incorrect.";
+            return;
+        }
+        
+        if (selectedProfileImage != null)
+        {
+            var imagePath = await UserService.UpdateProfileImageAsync(
+                user.UserId,
+                selectedProfileImage);
+
+            if (imagePath != null)
+            {
+                user.ProfileImagePath = imagePath;
+            }
+        }
+
+        user.Email = editEmail;
+
+        isEditMode = false;
+        currentPassword = null;
+        newPassword = null;
+        confirmPassword = null;
+
+        StateHasChanged();
+    }
+
+    /*
+    private async Task SaveProfile()
+    {
+        if (user == null || editEmail == null)
+            return;
+
+        var success = await UserService.UpdateProfileAsync(
+            user.UserId,
+            editEmail,
+            newPassword);
+
+        if (success)
+        {
+            user.Email = editEmail;
+
+            if (!string.IsNullOrWhiteSpace(newPassword))
+                user.Password = newPassword;
+
+            isEditMode = false;
+            StateHasChanged();
+        }
+    }
+    */
+
+    private void CancelEdit()
+    {
+        isEditMode = false;
+        selectedProfileImage = null;
+
+    }
+
     private int CalculateAge(DateTime dob)
     {
         var today = DateTime.Today;
@@ -77,3 +575,4 @@
         return age;
     }
 }
+*@

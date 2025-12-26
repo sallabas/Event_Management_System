@@ -27,6 +27,12 @@
                placeholder="Password"
                @bind="password" />
 
+        <input class="register-input"
+               type="date"
+               @bind="dateOfBirth"
+               max="@maxDob" />
+
+
         <select class="register-input" @bind="selectedType">
             <option value="Regular">Regular User</option>
             <option value="Organizer">Organizer</option>
@@ -46,10 +52,29 @@
     private string selectedType = "Regular";
     private string errorMessage = "";
 
+    private DateTime? dateOfBirth = null;
+
+    private string maxDob =>
+        DateTime.Today.AddYears(-18).ToString("yyyy-MM-dd");
+
+
     private async Task HandleRegister()
     {
+        errorMessage = "";
+
+        if (dateOfBirth == null)
+        {
+            errorMessage = "Date of birth is required.";
+            return;
+        }
+
         var result = await UserService.RegisterAsync(
-            username, email, password, selectedType);
+            username,
+            email,
+            password,
+            dateOfBirth.Value,
+            selectedType
+        );
 
         if (!result.Success)
         {
@@ -60,4 +85,5 @@
         await Auth.LoginAsync(email, password);
         Nav.NavigateTo("/");
     }
+
 }

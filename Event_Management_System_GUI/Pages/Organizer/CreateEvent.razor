@@ -63,6 +63,215 @@
             <label class="label">Image URL (optional)</label>
             <input class="input" @bind="imageUrl" placeholder="https://example.com/image.jpg" />
 
+            <button class="btn create-btn" @onclick="HandleCreateEvent">
+                Create Event
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private User? currentUser;
+
+    private string title = "";
+    private string description = "";
+    private DateTime startDate = DateTime.Now;
+    private DateTime endDate = DateTime.Now.AddHours(2);
+    private int availableSpots = 50;
+
+    private List<Venue> venues = new();
+    private List<EventCategory> categories = new();
+
+    private string selectedVenueId = "";
+
+    private List<int> selectedCategoryIds = new();
+
+    private string imageUrl = "";
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await Auth.GetCurrentUserAsync();
+
+        venues = await Db.Venues
+            .Include(v => v.Location)
+            .ToListAsync();
+
+        categories = await Db.EventCategories.ToListAsync();
+    }
+
+    private async Task HandleCreateEvent()
+    {
+        if (currentUser == null || currentUser.UserTypes != UserType.Organizer)
+            return;
+
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            errorMessage = "Title is required.";
+            return;
+        }
+
+        if (!int.TryParse(selectedVenueId, out int venueId))
+        {
+            errorMessage = "Please select a venue.";
+            return;
+        }
+
+        if (endDate <= startDate)
+        {
+            errorMessage = "End date must be after start date.";
+            return;
+        }
+
+        if (!selectedCategoryIds.Any())
+        {
+            errorMessage = "Please select at least one category.";
+            return;
+        }
+
+        var venue = await Db.Venues.FindAsync(venueId);
+        if (venue == null)
+        {
+            errorMessage = "Invalid venue.";
+            return;
+        }
+
+        var selectedIds = selectedCategoryIds;
+
+        var selectedCats = await Db.EventCategories
+            .Where(c => selectedIds.Contains(c.EventCategoryId))
+            .ToListAsync();
+
+        var organizer = currentUser as Organizer;
+        if (organizer == null)
+        {
+            errorMessage = "Only organizers can create events.";
+            return;
+        }
+
+        var ev = new Event(
+            title,
+            description,
+            startDate,
+            endDate,
+            availableSpots,
+            organizer,
+            venue,
+            selectedCats
+        );
+
+        try
+        {
+            await EventService.AddEvent(ev);
+            Nav.NavigateTo("/");
+        }
+        catch (InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            errorMessage = "Unexpected error occurred while creating the event.";
+        }
+
+    }
+    
+    private void OnCategoryChange(ChangeEventArgs e)
+    {
+        if (e.Value is IEnumerable<string> multipleValues)
+        {
+            selectedCategoryIds = multipleValues
+                .Select(int.Parse)
+                .ToList();
+        }
+        else if (e.Value is string singleValue)
+        {
+            selectedCategoryIds = new List<int> { int.Parse(singleValue) };
+        }
+    }
+
+
+    private void GoLogin() => Nav.NavigateTo("/login");
+    private void GoHome() => Nav.NavigateTo("/");
+}
+
+
+@*
+@page "/organizer/create-event"
+@using Event_Management_System.Models.Base
+@using Microsoft.EntityFrameworkCore
+
+@inject AuthService Auth
+@inject EventService EventService
+@inject MasDbContext Db
+@inject NavigationManager Nav
+
+<div class="create-container">
+
+    @if (currentUser == null)
+    {
+        <p class="error">You must be logged in.</p>
+        <button class="btn" @onclick="GoLogin">Go to Login</button>
+    }
+    else if (currentUser.UserTypes != UserType.Organizer)
+    {
+        <p class="error">Only organizers can create events.</p>
+        <button class="btn" @onclick="GoHome">Return Home</button>
+    }
+    else
+    {
+        <div class="create-box">
+            <h2 class="title">Create New Event</h2>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <p class="error">@errorMessage</p>
+            }
+
+            <input class="input" @bind="title" placeholder="Event Title" />
+            <textarea class="textarea" @bind="description" placeholder="Description"></textarea>
+
+            <label class="label">Start Date</label>
+            <input class="input" type="datetime-local" @bind="startDate" />
+
+            <label class="label">End Date</label>
+            <input class="input" type="datetime-local" @bind="endDate" />
+
+            <label class="label">Available Spots</label>
+            <input class="input" type="number" @bind="availableSpots" min="1" />
+
+            <label class="label">Venue</label>
+            <select class="input" @bind="selectedVenueId">
+                <option value="">-- Select Venue --</option>
+                @foreach (var v in venues)
+                {
+                    <option value="@v.VenueId">
+                        @v.VenueName (@v.Location.City, @v.Location.Country)
+                    </option>
+                }
+            </select>
+
+            <label class="label">Categories</label>
+            <InputSelect class="input multi"
+                         multiple
+                         @bind-Value="selectedCategoryIds">
+                @foreach (var c in categories)
+                {
+                    <option value="@c.EventCategoryId">@c.CategoryName</option>
+                }
+            </InputSelect>
+
+            
+            $1$<select class="input multi" multiple @bind="selectedCategoryIds">
+                @foreach (var c in categories)
+                {
+                    <option value="@c.EventCategoryId">@c.CategoryName</option>
+                }
+            </select>#1#
+
+            <label class="label">Image URL (optional)</label>
+            <input class="input" @bind="imageUrl" placeholder="https://example.com/image.jpg" />
+
             <button class="btn create-btn" @onclick="HandleCreateEvent">Create Event</button>
         </div>
     }
@@ -81,7 +290,7 @@
     private List<EventCategory> categories = new();
 
     private string selectedVenueId = "";
-    private List<string> selectedCategoryIds = new();
+    private List<int> selectedCategoryIds = new();
 
     private string imageUrl = "";
     private string errorMessage = "";
@@ -120,8 +329,14 @@
 
         var venue = await Db.Venues.FindAsync(venueId);
         var selectedCats = await Db.EventCategories
-            .Where(c => selectedCategoryIds.Contains(c.EventCategoryId.ToString()))
+            .Where(c => selectedCategoryIds.Contains(c.EventCategoryId))
             .ToListAsync();
+        if (!selectedCategoryIds.Any())
+        {
+            errorMessage = "Please select at least one category.";
+            return;
+        }
+
 
         if (venue == null)
         {
@@ -152,6 +367,13 @@
         Nav.NavigateTo("/");
     }
     
+    private void OnCategoriesChanged(IEnumerable<string> values)
+    {
+        selectedCategoryIds = values
+            .Select(v => int.Parse(v))
+            .ToList();
+    }
+    /*
     private void OnCategoryChange(ChangeEventArgs e)
     {
         selectedCategoryIds.Clear();
@@ -162,8 +384,10 @@
             selectedCategoryIds = selected.ToList();
         }
     }
+    */
 
 
     private void GoLogin() => Nav.NavigateTo("/login");
     private void GoHome() => Nav.NavigateTo("/");
 }
+*@

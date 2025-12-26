@@ -8,6 +8,7 @@
 
 @inject MasDbContext Db
 @inject NavigationManager Nav
+@inject AuthService Auth
 
 <h2 class="page-title">Discussion</h2>
 
@@ -61,19 +62,42 @@ else
     private string? errorMessage;
 
 
-
-
     protected override async Task OnInitializedAsync()
     {
+        currentUser = await Auth.GetCurrentUserAsync();
 
-        currentUser = await Db.Users.FirstOrDefaultAsync();
+        if (currentUser == null)
+        {
+            errorMessage = "You must be logged in to comment.";
+            return;
+        }
+
+        currentEvent = await Db.Events
+            .FirstOrDefaultAsync(e => e.EventId == EventId);
+
+        if (currentEvent == null)
+        {
+            errorMessage = "Event not found.";
+            return;
+        }
+
+        // 🔹 3. Yorumları yükle
+        await LoadComments();
+    }
+
+
+
+    /*protected override async Task OnInitializedAsync()
+    {
+
+        // currentUser = await Db.Users.FirstOrDefaultAsync();
 
         currentEvent = await Db.Events
             .Include(e => e.Enrollments)
             .FirstOrDefaultAsync(e => e.EventId == EventId);
 
         await LoadComments();
-    }
+    }*/
 
     private async Task LoadComments()
     {
@@ -97,23 +121,28 @@ else
             return;
         }
 
-        bool isEnrolled = currentEvent.Enrollments
-            .Any(e => e.UserId == currentUser.UserId);
-
-        if (!isEnrolled)
+        bool isEnrolled = await Db.Enrollments
+            .AnyAsync(e => e.UserId == currentUser.UserId && e.EventId == EventId);
+        
+        bool isOrganizer = currentUser.UserTypes == UserType.Organizer;
+        
+        if (!isEnrolled && !isOrganizer)
         {
             errorMessage = "You must be enrolled to be able to comment.";
             return;
         }
+
         var comment = new DiscussionComment(currentUser, currentEvent, newComment);
 
         Db.DiscussionComments.Add(comment);
         await Db.SaveChangesAsync();
 
         newComment = "";
+        errorMessage = null;
 
         await LoadComments();
     }
+
 
     private void GoBack()
     {

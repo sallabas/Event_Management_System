@@ -1,6 +1,8 @@
 ﻿using Event_Management_System.Data;
 using Event_Management_System.Models.Base;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Components.Forms;
+
 
 namespace Event_Management_System_GUI.Services;
 
@@ -23,6 +25,7 @@ public class UserService
         string username,
         string email,
         string password,
+        DateTime dateOfBirth,
         string userType)
     {
         var result = new RegisterResult();
@@ -59,7 +62,7 @@ public class UserService
             newUser = new Organizer(
                 username,
                 email,
-                DateTime.Now.AddYears(-20), 
+                dateOfBirth,
                 password,
                 "New organizer",
                 false,
@@ -71,7 +74,7 @@ public class UserService
             newUser = new RegularUser(
                 username,
                 email,
-                DateTime.Now.AddYears(-20), 
+                dateOfBirth,
                 password,
                 "No address"
             );
@@ -87,6 +90,7 @@ public class UserService
     public async Task<User?> GetUserByIdAsync(int id)
     {
         return await _db.Users
+            .AsNoTracking()
             .Include(u => u.Followers)
             .Include(u => u.Following)
             .FirstOrDefaultAsync(u => u.UserId == id);
@@ -156,6 +160,116 @@ public class UserService
 
     }
     
+    public async Task<bool> UpdateProfileExtendedAsync(
+        int userId,
+        string email,
+        string? address,
+        string? businessDescription,
+        string? currentPassword,
+        string? newPassword)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        if (user == null)
+            return false;
+
+        // EMAIL 
+        user.Email = email;
+
+        // PASSWORD
+        if (!string.IsNullOrWhiteSpace(newPassword))
+        {
+            if (string.IsNullOrWhiteSpace(currentPassword))
+                return false;
+
+            if (user.Password != currentPassword)
+                return false;
+
+            user.Password = newPassword;
+        }
+
+        if (user is RegularUser regularUser)
+        {
+            if (!string.IsNullOrWhiteSpace(address))
+                regularUser.Address = address;   
+        }
+
+        if (user is Organizer organizer)
+        {
+            if (!string.IsNullOrWhiteSpace(businessDescription))
+                organizer.BusinessDescription = businessDescription;
+        }
+
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+
+
+    /*
+    public async Task<bool> UpdateProfileAsync(
+        int userId,
+        string email,
+        string? newPassword)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        if (user == null) return false;
+
+        user.Email = email;
+
+        if (!string.IsNullOrWhiteSpace(newPassword))
+        {
+            user.Password = newPassword;
+        }
+
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    */
+
+    public async Task<string?> UpdateProfileImageAsync(
+        int userId,
+        IBrowserFile file)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        if (user == null) return null;
+
+        var uploadsPath = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "wwwroot",
+            "uploads",
+            "profile"
+        );
+
+        Directory.CreateDirectory(uploadsPath);
+
+        var extension = Path.GetExtension(file.Name);
+        var fileName = $"user_{userId}{extension}";
+        var fullPath = Path.Combine(uploadsPath, fileName);
+
+        await using var stream = new FileStream(fullPath, FileMode.Create);
+        await file.OpenReadStream(maxAllowedSize: 5_000_000)
+            .CopyToAsync(stream);
+
+        user.ProfileImagePath = $"/uploads/profile/{fileName}";
+        await _db.SaveChangesAsync();
+
+        return user.ProfileImagePath;
+    }
     
+    // Follower-Following List 
+    public async Task<List<User>> GetFollowersAsync(int userId)
+    {
+        return await _db.Users
+            .Where(u => u.Following.Any(f => f.UserId == userId))
+            .ToListAsync();
+    }
+
+    public async Task<List<User>> GetFollowingAsync(int userId)
+    {
+        return await _db.Users
+            .Where(u => u.Followers.Any(f => f.UserId == userId))
+            .ToListAsync();
+    }
+
     
 }

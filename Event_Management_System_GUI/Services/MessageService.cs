@@ -18,7 +18,8 @@ namespace Event_Management_System_GUI.Services
             var message = new Message(content, DateTime.Now)
             {
                 SenderId = senderId,
-                ReceiverId = receiverId
+                ReceiverId = receiverId,
+                ViewDate = null
             };
 
             _db.Messages.Add(message);
@@ -30,6 +31,7 @@ namespace Event_Management_System_GUI.Services
         public async Task<List<Message>> GetChatAsync(int user1, int user2)
         {
             return await _db.Messages
+                .AsNoTracking()     
                 .Where(m =>
                     (m.SenderId == user1 && m.ReceiverId == user2) ||
                     (m.SenderId == user2 && m.ReceiverId == user1))
@@ -68,5 +70,24 @@ namespace Event_Management_System_GUI.Services
                 .OrderByDescending(i => i.LastMessage.SentDate)
                 .ToList();
         }
+        
+        public async Task MarkMessagesAsReadAsync(int senderId, int receiverId)
+        {
+            var unreadMessages = await _db.Messages
+                .Where(m =>
+                    m.SenderId == senderId &&
+                    m.ReceiverId == receiverId &&
+                    m.ViewDate == null)
+                .ToListAsync();
+
+            foreach (var msg in unreadMessages)
+            {
+                msg.ViewDate = DateTime.Now;
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
+
     }
 }

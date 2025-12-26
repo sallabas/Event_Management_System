@@ -27,13 +27,13 @@ namespace Event_Management_System.Data
         // mandatory working path -> related to "GUI -> .db" connection
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
+            /*if (!optionsBuilder.IsConfigured)
             {
                 var dbPath = @"C:\Users\kysal\RiderProjects\Event_Management_System\Event_Management_System\mas.db";
 
         
                 optionsBuilder.UseSqlite($"Data Source={dbPath}");
-            }
+            }*/
         }
 
         

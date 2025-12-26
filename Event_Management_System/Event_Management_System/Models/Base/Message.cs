@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 
 namespace Event_Management_System.Models.Base
 {
@@ -11,7 +12,9 @@ namespace Event_Management_System.Models.Base
        public int ReceiverId { get; set; }
 
        // Navigation propertoes
+       [JsonIgnore]
        public User Sender { get; set; } = null!;
+       [JsonIgnore]
        public User Receiver { get; set; } = null!;
 
 
@@ -49,6 +52,8 @@ namespace Event_Management_System.Models.Base
         }
 
         public bool Received => ViewDate.HasValue;
+        public bool IsRead => ViewDate.HasValue;
+
         
         // reflexive set up - it supports reflexive association !!! WARNING !!!
         public void SetParticipants(User sender, User receiver)

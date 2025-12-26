@@ -34,6 +34,7 @@
   
 	<ItemGroup>
 	  <Folder Include="Pages\Controllers\" />
+	  <Folder Include="wwwroot\uploads\" />
 	</ItemGroup>
 
 
