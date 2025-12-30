@@ -16,7 +16,9 @@ namespace Event_Management_System.Models.Base
         // Navigation Properties
         public Venue Venue { get; set; } = null!;
         public Organizer Organizer { get; set; } = null!;
-
+        
+        //Event Status Property
+        public EventStatus Status { get; set; } = EventStatus.Open;
         
         private string _eventTitle = null!;
         private string _description = null!;

@@ -3,6 +3,7 @@ using System;
 using Event_Management_System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Event_Management_System.Migrations
 {
     [DbContext(typeof(MasDbContext))]
-    partial class MasDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251230100841_AddEventStatus")]
+    partial class AddEventStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -354,16 +357,6 @@ namespace Event_Management_System.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("vw_popular_events", (string)null);
-                });
-
-            modelBuilder.Entity("Event_Management_System.Models.Views.UpcomingEventView", b =>
-                {
-                    b.Property<int>("EventId")
-                        .HasColumnType("INTEGER");
-
-                    b.ToTable((string)null);
-
-                    b.ToView("vw_upcoming_events", (string)null);
                 });
 
             modelBuilder.Entity("UserFollow", b =>

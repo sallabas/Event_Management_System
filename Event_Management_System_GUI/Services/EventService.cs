@@ -241,6 +241,51 @@ public class EventService
             .ToListAsync();
     }
 
+    // View PopularEvents
+    public async Task<List<Event>> GetPopularEventsAsync()
+    {
+        var popularIds = await _context.PopularEvents
+            .OrderByDescending(p => p.EnrollmentCount)
+            .Select(p => p.EventId)
+            .ToListAsync();
+
+        if (!popularIds.Any())
+            return new List<Event>();
+
+        var events = await _context.Events
+            .AsNoTracking()
+            .Include(e => e.Venue).ThenInclude(v => v.Location)
+            .Include(e => e.Categories)
+            .Include(e => e.Enrollments)
+            // .Include(e => e.PromotedRequests)
+            .Where(e => popularIds.Contains(e.EventId))
+            .ToListAsync();
+
+        return events
+            .OrderBy(e => popularIds.IndexOf(e.EventId))
+            .ToList();
+    }
+    
+    public async Task<List<Event>> GetUpcomingEventsAsync()
+    {
+        return await GetUpcomingEventsFromViewAsync();
+    }
+    
+    public async Task<List<Event>> GetUpcomingEventsFromViewAsync()
+    {
+        return await _context.Events
+            .Where(e =>
+                _context.UpcomingEvents.Any(v => v.EventId == e.EventId)
+            )
+            .Include(e => e.Venue).ThenInclude(v => v.Location)
+            .Include(e => e.Organizer)
+            .Include(e => e.Categories)
+            .Include(e => e.Enrollments)
+            .Include(e => e.PromotedRequests)
+            .OrderBy(e => e.StartDate)
+            .ToListAsync();
+    }
+
 
 
 }

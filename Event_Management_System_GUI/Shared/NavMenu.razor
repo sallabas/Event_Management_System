@@ -29,6 +29,12 @@
             <!-- ROLE-BASED NAVIGATION -->
             @if (currentUser?.UserTypes == UserType.Organizer)
             {
+                <li>
+                    <a href="/organizer/dashboard" class="nav-item">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </a>
+                </li>
+
                 <li><a href="/organizer/events" class="nav-item"><span class="nav-icon">🗂️</span> My Events</a></li>
                 <li><a href="/organizer/create-event" class="nav-item"><span class="nav-icon">➕</span> Create Event</a></li>
                 <li><a href="/organizer/promotions" class="nav-item"><span class="nav-icon">📢</span> Promote Events</a></li> 

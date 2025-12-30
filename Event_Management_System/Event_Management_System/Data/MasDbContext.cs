@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Event_Management_System.Models.Base;       
+using Event_Management_System.Models.Base;      
+using Event_Management_System.Models.Views;
+
 
 namespace Event_Management_System.Data
 {
@@ -22,6 +24,13 @@ namespace Event_Management_System.Data
         public DbSet<Transaction> Transactions => Set<Transaction>();
         public DbSet<DiscussionComment> DiscussionComments => Set<DiscussionComment>();
         public DbSet<PromotedRequest> PromotedRequests => Set<PromotedRequest>();
+        
+        // Views
+        public DbSet<PopularEventView> PopularEvents => Set<PopularEventView>();
+        public DbSet<UpcomingEventView> UpcomingEvents { get; set; }
+        
+        public DbSet<OrganizerEventStatsView> OrganizerEventStats { get; set; }
+
 
 
         // mandatory working path -> related to "GUI -> .db" connection
@@ -217,7 +226,23 @@ namespace Event_Management_System.Data
                 .WithMany(pr => pr.Transactions)
                 .HasForeignKey(t => t.PromotedRequestId)
                 .OnDelete(DeleteBehavior.SetNull);
+            
+            // Views
+            // Get Popular Events
+            b.Entity<PopularEventView>()
+                .HasNoKey()
+                .ToView("vw_popular_events");
+            
+            //Upcoming Events
+            b.Entity<UpcomingEventView>()
+                .HasNoKey()
+                .ToView("vw_upcoming_events");
+            
+            b.Entity<OrganizerEventStatsView>()
+                .HasNoKey()
+                .ToView("vw_organizer_event_stats");
 
+            
         }
     }
 }

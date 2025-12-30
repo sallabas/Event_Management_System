@@ -105,3 +105,23 @@
     font-size: 22px;
     text-align: center;
 }
+
+.details-capacity {
+    color: #bbbbbb;
+    margin-top: 6px;
+}
+
+.details-available.open {
+    color: #2ecc71; /* yeşil */
+    font-weight: 600;
+}
+
+.details-available.full {
+    color: #e74c3c; /* kırmızı */
+    font-weight: 600;
+}
+
+.details-location strong {
+    color: #ffffff;
+    font-weight: 600;
+}

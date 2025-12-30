@@ -73,7 +73,7 @@ namespace Event_Management_System.Models.Base
         [JsonIgnore]
         public ICollection<Message> MessagesSent { get; set; } = new List<Message>();
 
-
+        [JsonIgnore]
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         public ICollection<DiscussionComment> Comments { get; set; } = new List<DiscussionComment>();
 

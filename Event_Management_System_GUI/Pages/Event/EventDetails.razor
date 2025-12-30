@@ -6,6 +6,9 @@
 @inject NavigationManager Nav
 @inject AuthService Auth
 @inject AuthenticationStateProvider AuthProvider
+@inject EnrollmentService EnrollmentService
+@inject EventService EventService
+
 
 
 <div class="details-container">
@@ -31,9 +34,18 @@
 
                 <p class="details-location">
                     <i class="fa-solid fa-location-dot"></i>
-                    @selectedEvent.Venue?.Location?.City,
+
+                    <strong>@selectedEvent.Venue?.VenueName</strong>
+                    — @selectedEvent.Venue?.Location?.City,
                     @selectedEvent.Venue?.Location?.Country
                 </p>
+
+
+                @*<p class="details-location">
+                    <i class="fa-solid fa-location-dot"></i>
+                    @selectedEvent.Venue?.Location?.City,
+                    @selectedEvent.Venue?.Location?.Country
+                </p>*@
 
                 <p class="details-description">@selectedEvent.Description</p>
 
@@ -54,16 +66,46 @@
                     @selectedEvent.Enrollments.Count participant(s)
                 </p>
 
+                <p class="details-capacity">
+                    <i class="fa-solid fa-chair"></i>
+                    Capacity: @selectedEvent.AvailableSpots
+                </p>
+
+                <p class="details-available
+                     @(GetAvailableSpots() == 0 ? "full" : "open")">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Available spots: @GetAvailableSpots()
+                </p>
+
+                @if (!string.IsNullOrEmpty(enrollError))
+                {
+                    <div class="error-message">
+                        @enrollError
+                    </div>
+                }
+
                 <div class="details-buttons">
 
                     @if (IsEnrolled())
+                    {
+                        <button class="btn btn-leave" @onclick="UnenrollFromEvent">
+                            Unenroll
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-join" @onclick="EnrollInEvent">
+                            Join Event
+                        </button>
+                    }
+                    @*@if (IsEnrolled())
                     {
                         <button class="btn btn-leave" @onclick="UnenrollFromEvent">Unenroll</button>
                     }
                     else
                     {
                         <button class="btn btn-join" @onclick="EnrollInEvent">Join Event</button>
-                    }
+                    }*@
 
                     <button class="btn btn-secondary" @onclick="ViewParticipants">
                         View Participants
@@ -88,6 +130,8 @@
 
     private Event? selectedEvent;
     private User? currentUser;
+    private string enrollError;
+
 
     protected override async Task OnParametersSetAsync()
     {
@@ -109,6 +153,25 @@
 
     private async Task EnrollInEvent()
     {
+        if (selectedEvent == null || currentUser == null || IsEnrolled())
+            return;
+
+        var (success, error) =
+            await EnrollmentService.EnrollAsync(currentUser.UserId, EventId);
+
+        if (!success)
+        {
+            enrollError = error;
+            await RefreshAsync(); // 🔒 UI state temizliği
+            return;
+        }
+
+        enrollError = null;
+        await RefreshAsync();
+    }
+
+    /*private async Task EnrollInEvent()
+    {
         if (selectedEvent == null || currentUser == null || IsEnrolled()) return;
 
 
@@ -116,7 +179,7 @@
         await Db.SaveChangesAsync();
 
         await RefreshAsync();
-    }
+    }*/
 
     private async Task UnenrollFromEvent()
     {
@@ -147,6 +210,14 @@
         StateHasChanged();
     }
 
+    private int GetAvailableSpots()
+    {
+        if (selectedEvent == null)
+            return 0;
+
+        return selectedEvent.AvailableSpots - selectedEvent.Enrollments.Count;
+    }
+    
     private void ViewParticipants() => Nav.NavigateTo($"/events/{EventId}/participants");
     private void ViewDiscussion() => Nav.NavigateTo($"/events/{EventId}/discussion");
     private void GoBack() => Nav.NavigateTo("/events");

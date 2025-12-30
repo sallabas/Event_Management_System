@@ -33,6 +33,10 @@
                 Upcoming Events
             </button>
 
+            <button class="btn secondary" @onclick="ShowPopular">
+                Popular Events
+            </button>
+
             <button class="btn secondary" @onclick="ClearFilters">
                 Clear Filters
             </button>
@@ -130,6 +134,7 @@ else
     private DateTime? filterEndDate;
     
     private bool filtersOpen = false;
+    private bool showPopular = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -144,6 +149,8 @@ else
 
     private async Task ApplyFilters()
     {
+        showPopular = false;
+
         if (selectedCategoryId == null &&
             filterStartDate == null &&
             filterEndDate == null)
@@ -167,12 +174,25 @@ else
         selectedCategoryId = null;
         filterStartDate = null;
         filterEndDate = null;
+        showPopular = false;
 
         Events = await EventService.GetAllEventsRankedAsync();
         StateHasChanged();
     }
 
+    private async Task ShowUpcoming()
+    {
+        showPopular = false;
+        selectedCategoryId = null;
+        filterStartDate = null;
+        filterEndDate = null;
 
+        Events = await EventService.GetUpcomingEventsFromViewAsync();
+        StateHasChanged();
+    }
+
+
+    /*
     private async Task ShowUpcoming()
     {
         filterStartDate = DateTime.Today;
@@ -184,6 +204,20 @@ else
             filterEndDate
         );
 
+        StateHasChanged();
+    }
+    */
+
+    
+    private async Task ShowPopular()
+    {
+        showPopular = true;
+
+        selectedCategoryId = null;
+        filterStartDate = null;
+        filterEndDate = null;
+
+        Events = await EventService.GetPopularEventsAsync();
         StateHasChanged();
     }
     

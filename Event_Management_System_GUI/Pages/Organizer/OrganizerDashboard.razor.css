@@ -1,0 +1,74 @@
+﻿.dashboard-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.dashboard-subtitle {
+    color: #9ca3af;
+    margin-bottom: 2rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    max-width: 900px;
+}
+
+.stat-card {
+    background: linear-gradient(145deg, #1f2933, #111827);
+    border-radius: 14px;
+    padding: 1.6rem;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #9ca3af;
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+/* Accent colors */
+.accent-blue .stat-value {
+    color: #60a5fa;
+}
+.accent-green .stat-value {
+    color: #22c55e;
+}
+.accent-orange .stat-value {
+    color: #f59e0b;
+}
+.accent-red .stat-value {
+    color: #ef4444;
+}
+.accent-purple .stat-value {
+    color: #a78bfa;
+}
+.accent-gold .stat-value {
+    color: #facc15;
+}
+
+/* Wide cards */
+.stat-card.wide {
+    grid-column: span 2;
+}
+
+.loading-text {
+    color: #9ca3af;
+}

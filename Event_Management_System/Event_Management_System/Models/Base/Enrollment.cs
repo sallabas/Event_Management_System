@@ -1,11 +1,15 @@
-﻿using Event_Management_System.Models.Base;
+﻿using System.Text.Json.Serialization;
+using Event_Management_System.Models.Base;
 
 [Serializable]
 public class Enrollment
 {
 
     // Navigation Property
+    [JsonIgnore]
     public User User { get; set; } = null!;
+    
+    [JsonIgnore]
     public Event Event { get; set; } = null!;
     
     // ef core, composite key

@@ -1,0 +1,64 @@
+﻿@page "/organizer/dashboard"
+@inject OrganizerStatsService StatsService
+@inject AuthService Auth
+@using Event_Management_System.Models.Views
+
+
+<h1 class="dashboard-title">Organizer Dashboard</h1>
+<p class="dashboard-subtitle">
+    ......................................................................................................
+</p>
+
+@if (stats == null)
+{
+    <p class="loading-text">Loading statistics...</p>
+}
+else
+{
+    <div class="dashboard-grid">
+
+        <div class="stat-card accent-blue">
+            <span class="stat-label">Total Events</span>
+            <span class="stat-value">@stats.TotalEvents</span>
+        </div>
+
+        <div class="stat-card accent-green">
+            <span class="stat-label">Upcoming Events</span>
+            <span class="stat-value">@stats.UpcomingEvents</span>
+        </div>
+
+        <div class="stat-card accent-orange">
+            <span class="stat-label">Open Events</span>
+            <span class="stat-value">@stats.OpenEvents</span>
+        </div>
+
+        <div class="stat-card accent-red">
+            <span class="stat-label">Full Events</span>
+            <span class="stat-value">@stats.FullEvents</span>
+        </div>
+
+        <div class="stat-card accent-purple wide">
+            <span class="stat-label">Total Enrollments</span>
+            <span class="stat-value">@stats.TotalEnrollments</span>
+        </div>
+
+        <div class="stat-card accent-gold wide">
+            <span class="stat-label">Promoted Events</span>
+            <span class="stat-value">@stats.PromotedEvents</span>
+        </div>
+
+    </div>
+}
+
+@code {
+    private OrganizerEventStatsView? stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await Auth.GetCurrentUserAsync();
+        if (user != null)
+        {
+            stats = await StatsService.GetStatsForOrganizerAsync(user.UserId);
+        }
+    }
+}

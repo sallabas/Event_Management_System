@@ -54,6 +54,8 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<MockPaymentService>();
 builder.Services.AddHostedService<PromotionBackgroundService>();
 builder.Services.AddScoped<SearchService>();
+builder.Services.AddScoped<OrganizerStatsService>();
+
 
 
 

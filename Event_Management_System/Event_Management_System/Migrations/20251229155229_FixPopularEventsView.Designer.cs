@@ -3,6 +3,7 @@ using System;
 using Event_Management_System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Event_Management_System.Migrations
 {
     [DbContext(typeof(MasDbContext))]
-    partial class MasDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251229155229_FixPopularEventsView")]
+    partial class FixPopularEventsView
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -103,9 +106,6 @@ namespace Event_Management_System.Migrations
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
 
                     b.Property<int>("VenueId")
                         .HasColumnType("INTEGER");
@@ -337,33 +337,6 @@ namespace Event_Management_System.Migrations
                     b.HasIndex("LocationId");
 
                     b.ToTable("Venues");
-                });
-
-            modelBuilder.Entity("Event_Management_System.Models.Views.PopularEventView", b =>
-                {
-                    b.Property<int>("EnrollmentCount")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("EventTitle")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.ToTable((string)null);
-
-                    b.ToView("vw_popular_events", (string)null);
-                });
-
-            modelBuilder.Entity("Event_Management_System.Models.Views.UpcomingEventView", b =>
-                {
-                    b.Property<int>("EventId")
-                        .HasColumnType("INTEGER");
-
-                    b.ToTable((string)null);
-
-                    b.ToView("vw_upcoming_events", (string)null);
                 });
 
             modelBuilder.Entity("UserFollow", b =>
