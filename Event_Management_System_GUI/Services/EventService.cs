@@ -153,7 +153,7 @@ public class EventService
         return promotedEvents;
     }
     
-    public async Task UpdateEvent(Event updatedEvent)
+    public async Task UpdateEvent(Event updatedEvent, List<int> selectedCategoryIds)
     {
         var existingEvent = await _context.Events
             .Include(e => e.Categories)
@@ -173,11 +173,15 @@ public class EventService
         existingEvent.StartDate = updatedEvent.StartDate;
         existingEvent.EndDate = updatedEvent.EndDate;
         existingEvent.AvailableSpots = updatedEvent.AvailableSpots;
-
         existingEvent.VenueId = updatedEvent.VenueId;
-
         existingEvent.Categories.Clear();
-        foreach (var cat in updatedEvent.Categories)
+
+        // feedback 3, many-tomany relation is synched, using tracked entities from dbcontext.
+        var trackedCategories = await _context.EventCategories
+            .Where(c => selectedCategoryIds.Contains(c.EventCategoryId))
+            .ToListAsync();
+
+        foreach (var cat in trackedCategories)
         {
             existingEvent.Categories.Add(cat);
         }

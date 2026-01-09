@@ -153,6 +153,13 @@
 
     private async Task EnrollInEvent()
     {
+        // feedback 1, unloginned procces directing us to login page 
+        if (currentUser == null)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+        
         if (selectedEvent == null || currentUser == null || IsEnrolled())
             return;
 
@@ -162,7 +169,7 @@
         if (!success)
         {
             enrollError = error;
-            await RefreshAsync(); // 🔒 UI state temizliği
+            await RefreshAsync(); 
             return;
         }
 

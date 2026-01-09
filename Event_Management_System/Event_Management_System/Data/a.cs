@@ -5,29 +5,23 @@ using Event_Management_System.Models.Base;
 
 namespace Event_Management_System.Data
 {
-    public static class DataInitializer
+    public static class a
     {
         public static void Seed(MasDbContext context)
         {
             SeedLocations(context);
-            context.SaveChanges();
             SeedVenues(context);
-            context.SaveChanges();
             SeedCategories(context);
-            context.SaveChanges();
             SeedUsers(context);
-            context.SaveChanges();
             SeedEvents(context);
-            context.SaveChanges();
             SeedEnrollments(context);
-            context.SaveChanges();
             SeedPromotions(context);
-            context.SaveChanges();
             SeedMessages(context);
+
             context.SaveChanges();
         }
 
-        // location
+        // -------------------- LOCATIONS --------------------
         private static void SeedLocations(MasDbContext context)
         {
             if (context.Locations.Any()) return;
@@ -44,7 +38,7 @@ namespace Event_Management_System.Data
             );
         }
 
-        // venues
+        // -------------------- VENUES --------------------
         private static void SeedVenues(MasDbContext context)
         {
             if (context.Venues.Any()) return;
@@ -71,7 +65,7 @@ namespace Event_Management_System.Data
         }
 
 
-        // catgeories
+        // -------------------- CATEGORIES --------------------
         private static void SeedCategories(MasDbContext context)
         {
             if (context.EventCategories.Any()) return;
@@ -93,7 +87,7 @@ namespace Event_Management_System.Data
             );
         }
 
-        // users
+        // -------------------- USERS --------------------
         private static void SeedUsers(MasDbContext context)
         {
             if (context.Users.Any()) return;
@@ -186,7 +180,7 @@ namespace Event_Management_System.Data
             );
         }
 
-        // events
+        // -------------------- EVENTS --------------------
         private static void SeedEvents(MasDbContext context)
         {
             if (context.Events.Any()) return;
@@ -280,7 +274,7 @@ namespace Event_Management_System.Data
         }
 
 
-        // enrollment
+        // -------------------- ENROLLMENTS --------------------
         private static void SeedEnrollments(MasDbContext context)
         {
             if (context.Enrollments.Any()) return;
@@ -384,7 +378,7 @@ namespace Event_Management_System.Data
         }
 
 
-        // promotipns
+        // -------------------- PROMOTIONS --------------------
         private static void SeedPromotions(MasDbContext context)
         {
             if (context.PromotedRequests.Any()) return;
@@ -431,7 +425,7 @@ namespace Event_Management_System.Data
         }
 
 
-        // messages
+        // -------------------- MESSAGES --------------------
         private static void SeedMessages(MasDbContext context)
         {
             if (context.Messages.Any()) return;
